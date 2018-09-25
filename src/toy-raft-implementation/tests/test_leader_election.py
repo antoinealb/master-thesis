@@ -1,24 +1,6 @@
 import unittest
-import collections
-
-class RaftState:
-    currentTerm = 0
-    votedFor = None
-
-    def process(self, request):
-        # TODO: deny vote if log is not at least as up to date
-        voteGranted  = False
-        if request.term > self.currentTerm:
-            self.currentTerm = request.term
-            self.votedFor = request.candidate
-            voteGranted = True
-        elif request.term == self.currentTerm and request.candidate == self.votedFor:
-            voteGranted = True
-
-        return VoteReply(self.currentTerm, voteGranted)
-
-VoteRequest = collections.namedtuple('VoteRequest', ['term', 'candidate', 'lastLogIndex', 'lastLogTerm'])
-VoteReply = collections.namedtuple('VoteReply', ['term', 'voteGranted'])
+from raft import *
+from unittest.mock import Mock
 
 
 class RequestVoteTestCase(unittest.TestCase):
@@ -59,3 +41,89 @@ class RequestVoteTestCase(unittest.TestCase):
 
         self.assertTrue(reply1.voteGranted)
         self.assertTrue(reply2.voteGranted)
+
+class ElectionLogic(unittest.TestCase):
+    def test_state_starts_at_follower(self):
+        state = RaftState()
+        self.assertEqual(state.state, NodeState.FOLLOWER)
+
+    def test_starting_election_transitions_into_candidate(self):
+        state = RaftState()
+        state.start_election()
+        self.assertEqual(state.state, NodeState.CANDIDATE)
+
+    def test_starting_election_increments_current_term(self):
+        state = RaftState()
+        state.currentTerm = 10
+        state.start_election()
+        self.assertEqual(state.currentTerm, 11)
+
+    def test_election_votes_are_cast(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+        state.start_election()
+
+        request = VoteRequest(term=1, candidate=42, lastLogIndex=0, lastLogTerm=0)
+
+        state.peers[0].request.assert_any_call(request)
+        state.peers[1].request.assert_any_call(request)
+
+    def test_do_not_cast_votes_if_already_leader(self):
+        state = RaftState()
+        state.state = NodeState.LEADER
+        state.peers = [Mock(), Mock()]
+        state.start_election()
+
+        for p in state.peers:
+            p.request.assert_not_called()
+
+    def test_is_elected_if_majority(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+
+        # TODO: what happens if a message gets duplicated ?
+        for p in state.peers:
+            p.request.return_value = VoteReply(term = 1, voteGranted=True)
+
+        state.start_election()
+
+        self.assertEqual(state.state, NodeState.LEADER)
+
+    def test_timeouts_are_ignored(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+        for p in state.peers:
+            p.request.return_value = None
+        state.start_election()
+        self.assertEqual(state.state, NodeState.CANDIDATE)
+
+
+class HeartBeatReception(unittest.TestCase):
+    def test_can_process_heartbeat(self):
+        state = RaftState()
+        state.election_timeout_timer = Mock()
+        hb = Heartbeat(term=1)
+        state.process(hb)
+
+        state.election_timeout_timer.reset.assert_any_call()
+
+class HeartbeatEmission(unittest.TestCase):
+    def test_leader_sends_heartbeats(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+
+        state.state = NodeState.LEADER
+        state.hearbeat_timer_fired()
+
+        request = Heartbeat(term=0)
+        for p in state.peers:
+            p.request.assert_any_call(request)
+
+    def test_followers_do_not_send_heartbeat(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+        state.state = NodeState.FOLLOWER
+
+        state.hearbeat_timer_fired()
+        for p in state.peers:
+            p.request.assert_not_called()
