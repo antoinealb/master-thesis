@@ -1,0 +1,7 @@
+toy-raft-tests:
+  image: python:3.6
+  stage: test
+  script:
+    - cd src/toy-raft-implementation/
+    - pip install -r requirements.txt
+    - python -m unittest discover
