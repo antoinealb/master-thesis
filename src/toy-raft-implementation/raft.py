@@ -18,6 +18,8 @@ class RaftState:
     def process(self, request):
         if isinstance(request, VoteRequest):
             return self._process_vote_request(request)
+        elif isinstance(request, VoteReply):
+            return self._process_vote_reply(request)
         elif isinstance(request, Heartbeat):
             return self._process_heartbeat(request)
 
@@ -32,17 +34,28 @@ class RaftState:
         elif request.term == self.currentTerm and request.candidate == self.votedFor:
             voteGranted = True
 
-        result =  VoteReply(self.currentTerm, voteGranted)
+        # TODO: Real ID
+        result =  VoteReply(self.currentTerm, voteGranted, self.id)
         logging.debug('Voting reply: %s', result)
 
         return result
 
+    def _process_vote_reply(self, reply):
+        if reply.voteGranted:
+            logging.debug('Got a vote for ourselves')
+            self.votes.add(reply)
+            if 2 * len(self.votes) > len(self.peers):
+                logging.info('became leader')
+                self.state = NodeState.LEADER
+        elif reply.term > self.currentTerm:
+            self.currentTerm = reply.term
 
     def _process_heartbeat(self, request):
         logging.debug('Got a heartbeat')
         self.election_timeout_timer.reset()
 
     def start_election(self):
+        self.votes = set()
         if self.state == NodeState.LEADER:
             return
 
@@ -56,17 +69,7 @@ class RaftState:
 
         logging.info('Casting votes')
         for p in self.peers:
-            reply = p.request(request)
-
-            if not reply:
-                continue
-
-            if reply.voteGranted:
-                votes += 1
-
-        if len(self.peers) < 2 * votes:
-            logging.info('Became leader')
-            self.state = NodeState.LEADER
+            p.request(request)
 
     def hearbeat_timer_fired(self):
         if self.state != NodeState.LEADER:
@@ -79,6 +82,6 @@ class RaftState:
 
 
 VoteRequest = collections.namedtuple('VoteRequest', ['term', 'candidate', 'lastLogIndex', 'lastLogTerm'])
-VoteReply = collections.namedtuple('VoteReply', ['term', 'voteGranted'])
+VoteReply = collections.namedtuple('VoteReply', ['term', 'voteGranted', 'fromId'])
 Heartbeat = collections.namedtuple('Heartbeat', ['term'])
 

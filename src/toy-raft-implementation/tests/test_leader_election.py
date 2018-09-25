@@ -82,12 +82,45 @@ class ElectionLogic(unittest.TestCase):
         state.peers = [Mock(), Mock()]
 
         # TODO: what happens if a message gets duplicated ?
-        for p in state.peers:
-            p.request.return_value = VoteReply(term = 1, voteGranted=True)
 
         state.start_election()
+        state.process(VoteReply(term=1, voteGranted=True, fromId=12))
+        state.process(VoteReply(term=1, voteGranted=True, fromId=13))
 
         self.assertEqual(state.state, NodeState.LEADER)
+
+    def test_restart_voting_process(self):
+        """
+        Checks that restarting the election process truly restarts the vote count.
+        """
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+
+        # TODO: what happens if a message gets duplicated ?
+
+        state.start_election()
+        state.process(VoteReply(term=1, voteGranted=True, fromId=12))
+
+        state.start_election()
+        state.process(VoteReply(term=1, voteGranted=True, fromId=13))
+
+        self.assertEqual(state.state, NodeState.CANDIDATE)
+
+    def test_denied_votes_are_not_counted(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+
+        state.start_election()
+        state.process(VoteReply(term=1, voteGranted=True, fromId=12))
+        state.process(VoteReply(term=1, voteGranted=False, fromId=13))
+        self.assertEqual(state.state, NodeState.CANDIDATE)
+
+    def test_not_elected_if_majority_is_not_reached(self):
+        state = RaftState()
+        state.peers = [Mock(), Mock()]
+        state.start_election()
+        state.process(VoteReply(term=1, voteGranted=True, fromId=12))
+        self.assertEqual(state.state, NodeState.CANDIDATE)
 
     def test_timeouts_are_ignored(self):
         state = RaftState()

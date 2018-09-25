@@ -6,11 +6,12 @@ Demoes leader election in Raft.
 import argparse
 import yaml
 import raft
-import zmq
+import socket
 import random
 import time
 import threading
 import logging
+import pickle
 
 
 def parse_args():
@@ -27,27 +28,26 @@ def parse_args():
         help="Show debug output",
         action='store_const',
         const=logging.DEBUG,
-        default=logging.INFO
-    )
+        default=logging.INFO)
 
     return parser.parse_args()
 
 
-def create_server(context, port):
-    socket = context.socket(zmq.REP)
-    socket.bind("tcp://*:{}".format(port))
+def create_server(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind(('', port))
 
-    return socket
+    return s
 
 
-def create_peers_socket(context, ports):
+def create_peers_socket(ports):
     result = {}
     for peer in ports:
-        socket = context.socket(zmq.REQ)
-        socket.connect("tcp://localhost:{}".format(peer))
-        result[peer] = socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        result[peer] = s
 
     return result
+
 
 class RandomizedTimer:
     def __init__(self, interval_min, interval_max, function):
@@ -57,7 +57,8 @@ class RandomizedTimer:
         self.timer = threading.Timer
 
     def _random_time(self):
-        return random.random() * (self.interval_max - self.interval_min) + self.interval_min
+        interval_width =  self.interval_max - self.interval_min
+        return random.random() * interval_width + self.interval_min
 
     def start(self):
         self.timer = threading.Timer(self._random_time(), self.function)
@@ -67,33 +68,36 @@ class RandomizedTimer:
         self.timer.cancel()
         self.start()
 
-class ZMQWrapper:
-    def __init__(self, socket):
+
+class SocketTransport:
+    def __init__(self, socket, src, port):
         self.socket = socket
-        self.socket.setsockopt(zmq.RCVTIMEO, 50)
+        self.port = port
+        self.src = src
 
     def request(self, request):
-        try:
-            self.socket.send_pyobj(request)
-            return self.socket.recv_pyobj()
-        except zmq.ZMQError:
-            pass
+        logging.debug('Sending %s to %s', request, self.port)
+        request = pickle._dumps((self.src, request))
+        self.socket.sendto(request, ('localhost', self.port))
+
 
 def main():
     args = parse_args()
     logging.basicConfig(level=args.verbose)
 
     config = yaml.load(args.config)
-    context = zmq.Context()
 
-    server_socket = create_server(context, config['port'])
-    peer_sockets = create_peers_socket(context, config['peers'])
+    server_socket = create_server(config['port'])
+    peer_sockets = create_peers_socket(config['peers'])
 
     state = raft.RaftState()
     state.lock = threading.Lock()
 
-    # TODO: Peers
-    state.peers = [ZMQWrapper(s) for s in peer_sockets.values()]
+    state.id = config['port']
+    state.peers = [
+        SocketTransport(socket, config['port'], port)
+        for port, socket in peer_sockets.items()
+    ]
 
     def election_timer_timeout():
         with state.lock:
@@ -106,7 +110,7 @@ def main():
             timer = threading.Timer(0.1, heartbeat_timeout)
             timer.start()
 
-    election_timer = RandomizedTimer(2, 10, election_timer_timeout)
+    election_timer = RandomizedTimer(1, 5, election_timer_timeout)
     state.election_timeout_timer = election_timer
     election_timer.start()
 
@@ -114,10 +118,15 @@ def main():
     hb_timer.start()
 
     while True:
-        request = server_socket.recv_pyobj()
+        request, addr = server_socket.recvfrom(1024)
+        port, request = pickle.loads(request)
+        logging.debug('Received %s from %s', request, port)
         with state.lock:
             reply = state.process(request)
-            server_socket.send_pyobj(reply)
+
+        if reply:
+            reply = pickle.dumps((state.id, reply))
+            server_socket.sendto(reply, ('localhost', port))
 
 
 if __name__ == '__main__':
