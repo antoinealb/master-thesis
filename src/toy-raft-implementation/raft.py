@@ -30,7 +30,7 @@ class RaftState:
     def _process_vote_request(self, request):
         self.logger.debug('Got a voting request')
         # TODO: deny vote if log is not at least as up to date
-        voteGranted  = False
+        voteGranted = False
         if request.term > self.currentTerm:
             self.currentTerm = request.term
             self.votedFor = request.candidate
@@ -38,12 +38,15 @@ class RaftState:
         elif request.term == self.currentTerm and request.candidate == self.votedFor:
             voteGranted = True
 
-        result =  VoteReply(self.currentTerm, voteGranted, self.id)
+        result = VoteReply(self.currentTerm, voteGranted, self.id)
         self.logger.debug('Voting reply: %s', result)
 
         return result
 
     def _process_vote_reply(self, reply):
+        if self.state != NodeState.CANDIDATE:
+            return
+
         if reply.voteGranted:
             self.logger.debug('Got a vote for ourselves')
             self.votes.add(reply)
@@ -63,10 +66,12 @@ class RaftState:
             return
 
         self.logger.info('starting election process...')
+        self.votedFor = self.id
         self.state = NodeState.CANDIDATE
         self.currentTerm += 1
 
-        request = VoteRequest(self.currentTerm, self.id, lastLogIndex=0, lastLogTerm=0)
+        request = VoteRequest(
+            self.currentTerm, self.id, lastLogIndex=0, lastLogTerm=0)
 
         votes = 0
 
