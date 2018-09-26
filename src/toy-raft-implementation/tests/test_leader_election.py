@@ -59,7 +59,7 @@ class ElectionLogic(unittest.TestCase):
         self.assertEqual(state.currentTerm, 11)
 
     def test_election_votes_are_cast(self):
-        state = RaftState()
+        state = RaftState(id=42)
         state.peers = [Mock(), Mock()]
         state.start_election()
 

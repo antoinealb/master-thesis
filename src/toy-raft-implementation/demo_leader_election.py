@@ -69,7 +69,7 @@ class RandomizedTimer:
         self.start()
 
 
-class SocketTransport:
+class UDPPickleTransport:
     def __init__(self, socket, src, port):
         self.socket = socket
         self.port = port
@@ -90,14 +90,14 @@ def main():
     server_socket = create_server(config['port'])
     peer_sockets = create_peers_socket(config['peers'])
 
-    state = raft.RaftState()
-    state.lock = threading.Lock()
-
-    state.id = config['port']
-    state.peers = [
-        SocketTransport(socket, config['port'], port)
+    peers = [
+        UDPPickleTransport(socket, config['port'], port)
         for port, socket in peer_sockets.items()
     ]
+
+    state = raft.RaftState(id=config['port'], peers=peers)
+    state.lock = threading.Lock()
+
 
     def election_timer_timeout():
         with state.lock:
