@@ -117,12 +117,21 @@ def main():
     hb_timer = threading.Timer(0.1, heartbeat_timeout)
     hb_timer.start()
 
+    was_leader = False
+
     while True:
         request, addr = server_socket.recvfrom(1024)
         port, request = pickle.loads(request)
         logging.debug('Received %s from %s', request, port)
         with state.lock:
             reply = state.process(request)
+
+            if state.state == raft.NodeState.LEADER and not was_leader:
+                state.replicate(state.id)
+                was_leader = True
+
+
+        logging.info("{}: {}".format(state.id, ",".join(str(s.command) for s in state.log)))
 
         if reply:
             reply = pickle.dumps((state.id, reply))
