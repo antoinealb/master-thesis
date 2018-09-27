@@ -1,4 +1,4 @@
-import collections
+from collections import namedtuple
 import logging
 from enum import Enum
 
@@ -88,6 +88,12 @@ class RaftState:
             p.request(request)
 
 
-VoteRequest = collections.namedtuple('VoteRequest', ['term', 'candidate', 'lastLogIndex', 'lastLogTerm'])
-VoteReply = collections.namedtuple('VoteReply', ['term', 'voteGranted', 'fromId'])
-Heartbeat = collections.namedtuple('Heartbeat', ['term'])
+VoteRequest = namedtuple('VoteRequest',
+                         ['term', 'candidate', 'lastLogIndex', 'lastLogTerm'])
+VoteReply = namedtuple('VoteReply', ['term', 'voteGranted', 'fromId'])
+LogEntry = namedtuple('LogEntry', ['term', 'index', 'command'])
+AppendEntriesRequest = namedtuple(
+    'AppendEntriesRequest',
+    ['term', 'prevLogIndex', 'prevLogTerm', 'entries', 'leaderCommit'])
+AppendEntriesReply = namedtuple('AppendEntriesReply',
+                                ['success', 'fromId', 'lastIndex'])
