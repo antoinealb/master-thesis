@@ -74,11 +74,15 @@ class UDPPickleTransport:
         self.socket = socket
         self.port = port
         self.src = src
+        self.id = port
 
     def request(self, request):
         logging.debug('Sending %s to %s', request, self.port)
         request = pickle._dumps((self.src, request))
         self.socket.sendto(request, ('localhost', self.port))
+
+    def __str__(self):
+        return "UDPPickleTransport(peer={})".format(self.id)
 
 
 def main():
@@ -131,7 +135,7 @@ def main():
                 was_leader = True
 
 
-        logging.info("{}: {}".format(state.id, ",".join(str(s.command) for s in state.log)))
+        print("{}: {}".format(state.id, ",".join(str(s.command) for s in state.log)))
 
         if reply:
             reply = pickle.dumps((state.id, reply))

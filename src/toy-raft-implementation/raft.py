@@ -67,7 +67,7 @@ class RaftState:
             self.votes = set()
 
     def _process_append_entries_request(self, request):
-        self.logger.debug('Got an append request')
+        self.logger.debug('Got an append request: %s', request)
         if request.term < self.currentTerm:
             return AppendEntriesReply(
                 success=False, lastIndex=None, fromId=self.id)
@@ -104,11 +104,13 @@ class RaftState:
     def _process_append_entries_reply(self, request):
         self.logger.debug('Got a append entries reply: %s', request)
 
+        peer = next(s for s in self.next_index.keys() if s.id == request.fromId)
         if request.success:
-            self.match_index[request.fromId] = request.lastIndex
-            self.next_index[request.fromId] = request.lastIndex + 1
+            self.match_index[peer] = request.lastIndex
+            self.next_index[peer] = request.lastIndex + 1
         else:
-            self.next_index[request.fromId] -= 1
+            self.logger.debug("Got a failure from %s, decreasing next_index", peer.id)
+            self.next_index[peer] -= 1
 
     def _last_log_index(self):
         try:
@@ -155,6 +157,7 @@ class RaftState:
             return
 
         self.logger.debug('sending heartbeat')
+        self.logger.debug('next_index = %s', self.next_index)
         for p in self.peers:
             next_index = self.next_index[p]
             prevLogIndex = 0

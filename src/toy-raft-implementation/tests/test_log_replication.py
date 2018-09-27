@@ -12,7 +12,6 @@ class ExampleOperations(Enum):
     INC = 0
     DEC = 1
 
-
 class LogReplication(unittest.TestCase):
     def test_request_is_appended_to_local_log(self):
         state = RaftState()
@@ -201,7 +200,7 @@ class LogReplication(unittest.TestCase):
         Checks that the match index is initialized correctly for every peer.
         """
         # TODO: There will be a need for a peer <-> ID translation somehow
-        state = RaftState(peers=[1, 2, 3])
+        state = RaftState(peers=[Mock(), Mock(), Mock()])
         state.log = [LogEntry(term=1, index=10, command=ExampleOperations.DEC)]
         state.become_leader()
 
@@ -211,12 +210,14 @@ class LogReplication(unittest.TestCase):
 
     def test_set_match_and_next_index_on_succesful_appendentry(self):
         state = RaftState(peers=[Mock(), Mock(), Mock()])
+        for i in range(len(state.peers)):
+            state.peers[i].id = i
         state.become_leader()
 
         for _ in range(3):
             state.replicate(ExampleOperations.INC)
 
-        reply = AppendEntriesReply(success=True, fromId=state.peers[0], lastIndex=2)
+        reply = AppendEntriesReply(success=True, fromId=0, lastIndex=2)
 
         state.process(reply)
         self.assertEqual(state.match_index[state.peers[0]], 2)
@@ -224,13 +225,16 @@ class LogReplication(unittest.TestCase):
 
     def test_decrement_next_index_on_failed_appendentry(self):
         state = RaftState(peers=[Mock(), Mock(), Mock()])
+        for i in range(len(state.peers)):
+            state.peers[i].id = i
+
         state.become_leader()
 
         for _ in range(3):
             state.replicate(ExampleOperations.INC)
 
-        reply1 = AppendEntriesReply(success=True, fromId=state.peers[0], lastIndex=1)
-        reply2 = AppendEntriesReply(success=False, fromId=state.peers[0], lastIndex=None)
+        reply1 = AppendEntriesReply(success=True, fromId=0, lastIndex=1)
+        reply2 = AppendEntriesReply(success=False, fromId=0, lastIndex=None)
 
         state.process(reply1)
         self.assertEqual(state.next_index[state.peers[0]], 2)
@@ -239,11 +243,13 @@ class LogReplication(unittest.TestCase):
 
     def test_non_replicated_entries_are_sent_again_on_heartbeat(self):
         state = RaftState(peers=[Mock(), Mock(), Mock()])
+        for i in range(len(state.peers)):
+            state.peers[i].id = i
         state.become_leader()
         state.replicate(ExampleOperations.INC)
         state.replicate(ExampleOperations.DEC)
 
-        reply1 = AppendEntriesReply(success=True, fromId=state.peers[0], lastIndex=1)
+        reply1 = AppendEntriesReply(success=True, fromId=0, lastIndex=1)
         state.process(reply1)
 
         state.hearbeat_timer_fired()
