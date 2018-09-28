@@ -19,6 +19,7 @@ class RaftState:
         self.state = NodeState.FOLLOWER
         self.votedFor = None
         self.currentTerm = 0
+        self.commitIndex = 0
 
     def process(self, msg):
         processors = {
@@ -34,7 +35,6 @@ class RaftState:
 
     def _process_vote_request(self, request):
         self.logger.debug('Got a voting request')
-        # TODO: deny vote if log is not at least as up to date
         voteGranted = False
         if request.term > self.currentTerm and \
            self._last_log_index() <= request.lastLogIndex and \
@@ -98,6 +98,9 @@ class RaftState:
 
         self.log = merge_log(self.log, request.entries)
 
+        if request.leaderCommit > self.commitIndex:
+            self.commitIndex = min(request.leaderCommit, self._last_log_index())
+
         return AppendEntriesReply(
             success=True, lastIndex=self._last_log_index(), fromId=self.id)
 
@@ -111,6 +114,15 @@ class RaftState:
         else:
             self.logger.debug("Got a failure from %s, decreasing next_index", peer.id)
             self.next_index[peer] -= 1
+
+        # Update commit index to the lastest index that was replicated on a
+        # majority of node.
+        n = sorted(self.match_index.values())[len(self.peers) // 2]
+        if n > self.commitIndex:
+            entry_N = next(e for e in self.log if e.index == n)
+            if entry_N.term == self.currentTerm:
+                self.commitIndex = n
+
 
     def _last_log_index(self):
         try:
@@ -175,7 +187,7 @@ class RaftState:
                 prevLogIndex=prevLogIndex,
                 prevLogTerm=prevLogTerm,
                 entries=entries,
-                leaderCommit=0)
+                leaderCommit=self.commitIndex)
             p.request(request)
 
     def replicate(self, command):
@@ -185,8 +197,7 @@ class RaftState:
         The commands can be anything, as long as they can be serialized by the
         chosen transport protocol.
         """
-        self.logIndex += 1
-        entry = LogEntry(self.currentTerm, self.logIndex, command)
+        entry = LogEntry(self.currentTerm, self._last_log_index() + 1, command)
         self.log.append(entry)
 
         request = AppendEntriesRequest(
@@ -194,10 +205,8 @@ class RaftState:
             prevLogTerm=0,
             prevLogIndex=0,
             entries=self.log,
-            leaderCommit=0)
+            leaderCommit=self.commitIndex)
 
-        for p in self.peers:
-            p.request(request)
 
 
 def merge_log(existing_log, new_entries):

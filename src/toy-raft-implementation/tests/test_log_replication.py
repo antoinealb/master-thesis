@@ -39,7 +39,9 @@ class LogReplication(unittest.TestCase):
         peers = [Mock(), Mock()]
         state = RaftState(peers=peers)
 
+        state.become_leader()
         state.replicate(ExampleOperations.INC)
+        state.hearbeat_timer_fired()
 
         request = AppendEntriesRequest(
             term=0,
@@ -50,6 +52,7 @@ class LogReplication(unittest.TestCase):
 
         for p in state.peers:
             p.request.assert_any_call(request)
+
 
     def test_process_append_entries(self):
         state = RaftState()
@@ -96,6 +99,31 @@ class LogReplication(unittest.TestCase):
         self.assertFalse(reply.success)
         self.assertEqual(state.id, reply.fromId)
         self.assertEqual(state.log, [])
+
+    def test_entry_is_committed_if_leader_says_so(self):
+        state = RaftState()
+        state.log = [LogEntry(term=1, index=1, command=None)]
+        state.term = 1
+        request = AppendEntriesRequest(term=1, prevLogIndex=1, prevLogTerm=1, entries=[], leaderCommit=1)
+        state.process(request)
+        self.assertEqual(state.commitIndex, 1)
+
+    def test_do_not_commit_entries_not_in_the_local_log(self):
+        state = RaftState()
+        state.log = [LogEntry(term=1, index=1, command=None)]
+        state.term = 1
+        request = AppendEntriesRequest(term=1, prevLogIndex=1, prevLogTerm=1, entries=[], leaderCommit=2)
+        state.process(request)
+        self.assertEqual(state.commitIndex, 1)
+
+    def test_do_not_uncommit_entries(self):
+        state = RaftState()
+        state.log = [LogEntry(term=1, index=1, command=None)]
+        state.term = 1
+        state.commitIndex = 1
+        request = AppendEntriesRequest(term=1, prevLogIndex=1, prevLogTerm=1, entries=[], leaderCommit=0)
+        state.process(request)
+        self.assertEqual(state.commitIndex, 1)
 
     def test_append_entries_is_rejected_if_previous_log_entry_does_not_exist(
             self):
@@ -257,3 +285,50 @@ class LogReplication(unittest.TestCase):
         msg = AppendEntriesRequest(term=0, prevLogTerm=0, prevLogIndex=1, entries=state.log[1:], leaderCommit=0)
 
         state.peers[0].request.assert_any_call(msg)
+
+    def test_commit_index_is_sent(self):
+        state = RaftState(peers=[Mock(), Mock(), Mock()])
+        state.become_leader()
+        state.commitIndex = 12
+        state.replicate(None)
+        state.hearbeat_timer_fired()
+        msg = AppendEntriesRequest(term=0, prevLogTerm=0, prevLogIndex=0, entries=state.log, leaderCommit=12)
+        state.peers[0].request.assert_any_call(msg)
+
+    def test_update_commit_index_when_majority_answered(self):
+        state = RaftState(peers=[Mock(), Mock()])
+        for i in range(len(state.peers)):
+            state.peers[i].id = i
+        state.become_leader()
+        state.replicate(ExampleOperations.INC)
+        state.replicate(ExampleOperations.DEC)
+
+        # the first message was replicated on a majority of the cluster, we can
+        # now assume that it was commited
+        state.process(AppendEntriesReply(success=True, fromId=0, lastIndex=1))
+        state.process(AppendEntriesReply(success=True, fromId=1, lastIndex=1))
+
+        self.assertEqual(state.commitIndex, 1)
+
+        # Even one node is enough, as the commit is present on both the leader
+        # and this replicated commit.
+        state.process(AppendEntriesReply(success=True, fromId=0, lastIndex=2))
+        self.assertEqual(state.commitIndex, 2)
+
+    def test_entries_from_previous_terms_are_not_commited_by_counting_replicas(self):
+        state = RaftState(peers=[Mock(), Mock()])
+        for i in range(len(state.peers)):
+            state.peers[i].id = i
+        state.become_leader()
+        state.replicate(ExampleOperations.INC)
+        state.replicate(ExampleOperations.DEC)
+
+        state.currentTerm = 10
+
+        # The messages were replicated on all clusters. However as they are not
+        # a part of the current term, they should not be committed by this
+        # leader.
+        state.process(AppendEntriesReply(success=True, fromId=0, lastIndex=1))
+        state.process(AppendEntriesReply(success=True, fromId=1, lastIndex=1))
+        self.assertEqual(state.commitIndex, 0)
+        state = RaftState()
