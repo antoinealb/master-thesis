@@ -12,6 +12,7 @@ import time
 import threading
 import logging
 import pickle
+from termcolor import cprint
 
 
 def parse_args():
@@ -47,6 +48,12 @@ def create_peers_socket(ports):
         result[peer] = s
 
     return result
+
+def interact(state):
+    while True:
+        s = input()
+        with state.lock:
+            state.replicate(s)
 
 
 class RandomizedTimer:
@@ -133,9 +140,12 @@ def main():
             if state.state == raft.NodeState.LEADER and not was_leader:
                 state.replicate(state.id)
                 was_leader = True
+                threading.Thread(target=interact, args=(state, )).start()
 
 
-        print("{}: {}".format(state.id, ",".join(str(s.command) for s in state.log)))
+        print("{}: {}".format(state.id, state.commitIndex), end='')
+        cprint(",".join(str(s.command) for s in state.log if s.index <= state.commitIndex), "green", end='')
+        cprint(",".join(str(s.command) for s in state.log if s.index > state.commitIndex), "yellow")
 
         if reply:
             reply = pickle.dumps((state.id, reply))
