@@ -1,0 +1,3 @@
+[submodule "scripts/benchmark-kernel-paxos/kernel-paxos"]
+	path = scripts/benchmark-kernel-paxos/kernel-paxos
+	url = https://github.com/esposem/Kernel_Paxos
