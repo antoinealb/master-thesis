@@ -18,3 +18,7 @@ mkdir zkdata
 
 cp $SRC/zookeeper.conf zookeeper-$ZK_VERSION/conf/zoo.cfg
 $SRC/zk_id_from_ip.py > zkdata/myid
+
+# Then install python3 for benchmarking needs
+sudo apt-get install -y python3-pip
+sudo pip3 install kazoo
