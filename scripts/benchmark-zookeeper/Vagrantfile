@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "ubuntu/xenial64"
+    config.vm.synced_folder ".", "/src"
+
+    config.vm.define "box1" do |vm|
+        vm.vm.network "private_network", ip: "10.0.10.1"
+    end
+
+    config.vm.define "box2" do |vm|
+        vm.vm.network "private_network", ip: "10.0.10.2"
+    end
+
+    config.vm.define "box3" do |vm|
+        vm.vm.network "private_network", ip: "10.0.10.3"
+    end
+
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    apt-get update
+    sudo -u vagrant /src/install.sh
+    SHELL
+end
