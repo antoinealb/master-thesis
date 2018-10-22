@@ -43,3 +43,21 @@ Interesting ones I saw:
 An interesting tool I stumbled upon is [Jepsen](https://jepsen.io) which is a framework used to test the consistency of distributed systems.
 Maybe it is worth it to use it on our end code to see if there is any issue.
 
+# Week 2 (October 1st-7th)
+
+Not in the lab, attended IROS
+
+# Week 3 (October 8th-14th)
+
+Worked on ZooKeeper.
+Brushed up on Rust.
+Did not do much because of injury.
+
+# Week 4 (October 15th-21st)
+
+* Got a working ZK cluster
+* Still trying to get kernel paxos to work.
+    Apparently each machine can only have one role in the Paxos protocol (Learner, Proposer xor Acceptor).
+    I think I need to read more on how Paxos works in order to understand this better.
+
+# Week 5 (October 22nd-28th)
