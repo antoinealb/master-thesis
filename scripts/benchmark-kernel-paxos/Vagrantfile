@@ -5,18 +5,24 @@ Vagrant.configure("2") do |config|
     config.vm.box = "ubuntu/xenial64"
     config.vm.synced_folder ".", "/src"
 
-    config.vm.define "box1" do |vm|
+    config.vm.define "acceptor1" do |vm|
         vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0001"
     end
-    config.vm.define "box2" do |vm|
+    config.vm.define "acceptor2" do |vm|
+        vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0003"
+    end
+    config.vm.define "acceptor3" do |vm|
+        vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0004"
+    end
+    config.vm.define "proposer1" do |vm|
         vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0002"
     end
-    config.vm.define "box3" do |vm|
-        vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0003"
+    config.vm.define "learner1" do |vm|
+        vm.vm.network "private_network", type: "dhcp", mac: "5CA1AB1E0005"
     end
 
     config.vm.provision "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y build-essential
+    sudo apt-get update
+    sudo apt-get install -y build-essential
     SHELL
 end

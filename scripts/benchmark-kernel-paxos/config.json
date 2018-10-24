@@ -1,0 +1,6 @@
+{
+    "mac_prefix": "5C:A1:AB:1E:00:00",
+    "proposers": [2],
+    "acceptors": [1,3,4],
+    "learners": [5]
+}
