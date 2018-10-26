@@ -70,4 +70,9 @@ Did not do much because of injury.
     Another interesting remark is the fact that they developped a special language to describe state machines and reason about them.
     Might be doable with Rust?
     Finally, the paper provides some performance measurements, but on very (12 years) old hardware, so it might be hard to make it relevant.
--
+- Spanner, TrueTime and the CAP Theorem (2017)
+    Whitepaper showing why it is possible to have systems that are CA in practice.
+    Basically the assumption is that most of the time partition tolerance does not matter, and that you only have to choose between C and A during one of those partitions.
+    Google explored the history of failures of the Spanner and Chubby services and arrived at the conclusion that network partitions are extremely rare.
+    Therefore they designed their system to operate in a globally CA way, while falling down to CP if needed.
+    TrueTime is a clock synchronization service that they use as an optimization in some cases.
