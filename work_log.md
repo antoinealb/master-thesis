@@ -61,3 +61,13 @@ Did not do much because of injury.
     I think I need to read more on how Paxos works in order to understand this better.
 
 # Week 5 (October 22nd-28th)
+
+- Paxos Made Live - An Engineering Perspective (2006)
+    Experience of a group of Googlers deploying Paxos to build a fault tolerant database.
+    Mixes algorithmic concerns (how to agree on a stream of value rather than a single one?) with practical considerations (how do you handle hard drive failures?).
+    For me it appears that a lot of Paxos' problems are solved by raft (snapshotting, Multi Paxos, cluster membership).
+    Presents an interesting primitive called MultiOp for implementation of more complex atomic operations.
+    Another interesting remark is the fact that they developped a special language to describe state machines and reason about them.
+    Might be doable with Rust?
+    Finally, the paper provides some performance measurements, but on very (12 years) old hardware, so it might be hard to make it relevant.
+-
