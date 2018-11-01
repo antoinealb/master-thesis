@@ -83,3 +83,12 @@ Did not do much because of injury.
     This allow the load balance to choose optimal load balancing strategies that minimise latency.
     I will use this paper for the transport protocol of my implementation (without the load balancing part).
     It seems pretty easy to implement a small client for it, if needed and there is a previous master thesis discussing it.
+
+# Week 6 (October 29th-November 4th)
+
+- Netbricks: Taking the V out of NFV (2016).
+    This paper proposes a novel way to implement network functions such as routing and load balancing on commodity hardware.
+    Previous work in this area used heavyweight isolation mechanism such as process boundaries, containers or VM.
+    This work presents a new way to do it using the Rust programming language and static checking of safety properties.
+    It also exposes interesting bindings for DPDK on Rust.
+    Unfortunately for me, the project appears to not be maintained anymore.
