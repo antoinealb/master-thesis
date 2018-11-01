@@ -92,3 +92,24 @@ Did not do much because of injury.
     This work presents a new way to do it using the Rust programming language and static checking of safety properties.
     It also exposes interesting bindings for DPDK on Rust.
     Unfortunately for me, the project appears to not be maintained anymore.
+
+
+## Notes on setting up DPDK
+tested on Ubuntu 18.04 (bionic) with Linux 4.15 running in Virtualbox.
+The setup has two emulated NICs ([qemu e1000 / Intel 82540](https://doc.dpdk.org/guides-16.07/nics/e1000em.html)).
+The one used for DPDK is on a host only network and initially has IP 10.0.100.2/24.
+
+`dpdk_setup.sh` seems to work:
+    - select x86_64-native-linuxapp-gcc
+    - insert IGB UIO
+    - setup hugepages for non NUMA (make sure to allocate at least 512 MB of memory -> 256 page)
+    - ip link set dev enp0s8 down
+    - bind the PCI dev to IGB UIO
+    - check ethernet status, should be under "network devices using dpdk compatible driver"
+    - Run testpmd app, using a core mask of 3 (for both cores).
+    - In testpmd app you can run "show port xstats all" to get RX/TX counters.
+    - On the host run "ping 10.0.100.2".
+        Since no IP stack is running on the DPDK card yet, it will show as unavailable.
+        However you should see the counters increasing on testpmd.
+        I am not sure how this interacts with ARP, maybe ping it once before giving the card to DPDK.
+
