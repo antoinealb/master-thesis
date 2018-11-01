@@ -76,3 +76,10 @@ Did not do much because of injury.
     Google explored the history of failures of the Spanner and Chubby services and arrived at the conclusion that network partitions are extremely rare.
     Therefore they designed their system to operate in a globally CA way, while falling down to CP if needed.
     TrueTime is a clock synchronization service that they use as an optimization in some cases.
+- Tail-Latency-Tolerant Load Balancing of Microsecond-scale RPCs (unpublished yet).
+    Paper suggesting a new transport mechanism for RPCs that stay inside a typical datacenter network.
+    The atributes of DC-internal networks (with very little packet loss and low latency) allow us to drop TCP in favor of UDP.
+    In addition to this, R2P2 implements a queue management system at the protocol level, which allows load balancers to know how many requests are queued at each backend worker.
+    This allow the load balance to choose optimal load balancing strategies that minimise latency.
+    I will use this paper for the transport protocol of my implementation (without the load balancing part).
+    It seems pretty easy to implement a small client for it, if needed and there is a previous master thesis discussing it.
