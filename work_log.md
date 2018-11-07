@@ -113,3 +113,16 @@ The one used for DPDK is on a host only network and initially has IP 10.0.100.2/
         However you should see the counters increasing on testpmd.
         I am not sure how this interacts with ARP, maybe ping it once before giving the card to DPDK.
 
+# Week 7 (November 5th - November 11th)
+
+Working DPDK test command to send into a pcap:
+
+```
+sudo ./3rdparty/dpdk/build/app/testpmd -c 3 -n 3 -m 64 --vdev 'net_pcap0,rx_pcap=test.pcap,tx_pcap=out.pcap' -- --mbuf-size=2048 --total-num-mbufs=2048 --port-topology=chained -i --no-flush-rx
+```
+
+This week we discussed the feasability of including Raft inside the transport protol.
+That means that a new policy would be introduced (replicated).
+In this mode the application would get the request callback only when the request has been correctly replicated on all nodes, and that all nodes in the cluster would see it in the same order.
+One leftover question is who answers the request; while it is clear that the request must be adressed to the leader, it is not clear if the leader only should respond or if all nodes should respond.
+If we make the assumption of very little loss of messages (underlying r2p2 assumption in a DC) and that the leader has little chances of crashing, it makes sense to only send them at the leader.
