@@ -100,18 +100,19 @@ The setup has two emulated NICs ([qemu e1000 / Intel 82540](https://doc.dpdk.org
 The one used for DPDK is on a host only network and initially has IP 10.0.100.2/24.
 
 `dpdk_setup.sh` seems to work:
-    - select x86_64-native-linuxapp-gcc
-    - insert IGB UIO
-    - setup hugepages for non NUMA (make sure to allocate at least 512 MB of memory -> 256 page)
-    - ip link set dev enp0s8 down
-    - bind the PCI dev to IGB UIO
-    - check ethernet status, should be under "network devices using dpdk compatible driver"
-    - Run testpmd app, using a core mask of 3 (for both cores).
-    - In testpmd app you can run "show port xstats all" to get RX/TX counters.
-    - On the host run "ping 10.0.100.2".
-        Since no IP stack is running on the DPDK card yet, it will show as unavailable.
-        However you should see the counters increasing on testpmd.
-        I am not sure how this interacts with ARP, maybe ping it once before giving the card to DPDK.
+
+- select x86_64-native-linuxapp-gcc
+- insert IGB UIO
+- setup hugepages for non NUMA (make sure to allocate at least 512 MB of memory -> 256 page)
+- ip link set dev enp0s8 down
+- bind the PCI dev to IGB UIO
+- check ethernet status, should be under "network devices using dpdk compatible driver"
+- Run testpmd app, using a core mask of 3 (for both cores).
+- In testpmd app you can run "show port xstats all" to get RX/TX counters.
+- On the host run "ping 10.0.100.2".
+    Since no IP stack is running on the DPDK card yet, it will show as unavailable.
+    However you should see the counters increasing on testpmd.
+    I am not sure how this interacts with ARP, maybe ping it once before giving the card to DPDK.
 
 # Week 7 (November 5th - November 11th)
 
@@ -126,3 +127,14 @@ That means that a new policy would be introduced (replicated).
 In this mode the application would get the request callback only when the request has been correctly replicated on all nodes, and that all nodes in the cluster would see it in the same order.
 One leftover question is who answers the request; while it is clear that the request must be adressed to the leader, it is not clear if the leader only should respond or if all nodes should respond.
 If we make the assumption of very little loss of messages (underlying r2p2 assumption in a DC) and that the leader has little chances of crashing, it makes sense to only send them at the leader.
+
+To make DPDK work on real NIC, you need to remove the `--vdev '...'` option from above command.
+Make sure that the NIC is correctly bound to DPDK via the setup script.
+You can now run `set fwd icmp_echo` and `start` commands.
+DPDK should now answer to pings (`ping 10.0.100.2` in the VM).
+
+To run NetBricks on pcap do the following (`--dur 5` means it will exit after 5 seconds).
+
+```
+./build.sh run macswap -p dpdk:eth_pcap0,rx_pcap=/src/test.pcap,tx_pcap=/src/out.pcap -c 1 --dur 5
+```
