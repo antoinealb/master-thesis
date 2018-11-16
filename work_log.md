@@ -138,3 +138,54 @@ To run NetBricks on pcap do the following (`--dur 5` means it will exit after 5 
 ```
 ./build.sh run macswap -p dpdk:eth_pcap0,rx_pcap=/src/test.pcap,tx_pcap=/src/out.pcap -c 1 --dur 5
 ```
+
+# Week 8 (November 12th - November 18th)
+
+Protocol used by the KV store:
+
+```
+???\r\n
+???\r\n
+{get|set}\r\n
+???\r\n
+key\r\n
+value
+```
+
+I spent the beginning of this week trying to get Ogiers thesis to work.
+It appears to have strange bugs with regards to memory management.
+If I comment out the freeing of mbufs, it works fine.
+Some notes in Ogier's thesis let me to believe he was aware of it.
+
+We discussed this with Marios and we both agree that switching to C might be easier.
+A few weeks ago I started working on a raft implementation in C++, I spent a few days finishing it this week.
+It is currently capable of leader election and log replication.
+Its architecture is event driven, meaning it should be relatively easy to add to the r2p2 protocol.
+
+One big question remains: how do we introduce the notion of time?
+Indeed, Raft requires a way to know that timeout elapsed to be able to send heartbeat and start elections.
+This does not play well with DPDK's model of polling the NIC; I will have to find something.
+However in the meantime I think I can get it to work using a new type of packets for ticks, and an external service that sends ticks.
+Not very clean architecture.
+Another option would be to have a thread dedicated to running timers, but I am not sure how well this would work.
+
+Another important remaining question is log compaction.
+In "normal" raft applications there is a mechanism to prevent the replicated log to grow indefinitely.
+Basically the idea is to snapshot the replicated FSM from time to time and to replace the log up to point N with a snapshot taken at point N.
+However, since we are using raft as a transport protocol and we do not know anything about the machine running on top (especially we don't know what a meaningful snapshot could be), this technique cannot be used!
+This means the log can grow indefinitely; quite problematic.
+In practice a first version can simply assume the log never gets too big, but we would have to find something for the longer term.
+An idea that I had was that we could simply assume that once an entry is commited on everyone, we would discard it from the log.
+This has the following issues:
+
+- What if a node stays down?
+    Then we will never be able to discard entries past its last commit.
+- What if a node dies then goes back online?
+    This means the application has to presist the replicated log / snapshots itself somehow.
+    Which might be slow if implemented in a dumb way.
+
+But just how big would that replicated log be in our experiment?
+Kernel paxos cites figures between 30k to 100k messages per second.
+Each log entry would be around 64 bytes, the size of a small r2p2 request.
+This means our log is growing at about 6.4 MB/s.
+It is too much for a long running application but appears to be OK for "small" experiments: 1 min would be around 400 MB of log.
