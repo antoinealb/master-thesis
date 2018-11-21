@@ -189,3 +189,19 @@ Kernel paxos cites figures between 30k to 100k messages per second.
 Each log entry would be around 64 bytes, the size of a small r2p2 request.
 This means our log is growing at about 6.4 MB/s.
 It is too much for a long running application but appears to be OK for "small" experiments: 1 min would be around 400 MB of log.
+
+# Week 9 (November 19th - November 25th)
+
+Wrote a new backend for r2p2 based on libuv.
+It allows me to write my code and test it on OSX/Windows/Linux using the correct backend everytime (kqueues, epoll, and whatever it is on Windows).
+I need to finish some memory management code for it, but then I am confident it can be a nice addition to r2p2.
+Plus, it only took me a day or so to implement, libuv is quite easier than the underlying syscalls.
+Maybe it can replace the linux backend ?
+
+I started integrating raft in r2p2, so far the only modification of the platform code was the addition of a periodic timer.
+This is needed to handle the various timeouts used by Raft.
+However I am not sure how this can be done in DPDK, it is only implemented in the libuv backend so far.
+As of wednesday leader election is working using a very hacky transport (basically dumping the c++ struct in an R2P2 packet).
+I am pretty sure the log replication works (the Raft code for it is tested), I just don't have any R2P2 implementation
+
+On the debugging side I wrote some ScaPy decoders for R2P2 and raft, which are very helpful to debug.
