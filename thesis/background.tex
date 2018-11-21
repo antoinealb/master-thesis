@@ -1,1 +1,30 @@
 \chapter{Background}
+
+\section{Distributed Consensus}
+
+In recent years, datasets have become larger and larger.
+Internet-scale companies started using horizontal scaling, in which a large number of inexpensive machines is used.
+This approach allowed them to keep up with the increase of sets, but also introduced challenges regarding data consistency.
+For example, in a distributed database, some nodes could see transaction A before transaction B, while other nodes could see them in a different order.
+If only one of the transaction could proceed, this would create an issue.
+
+Horizontal scaling also created issues of \emph{availability}.
+The increased number of servers meant an increase in the probabiltiy of a node failure.
+
+Distributed consensus is the problem of agreeing on a shared state in face of unreliable communications.
+It is understandable then that once solution to the distributed consensus problems were available, they quickly became parts of almose every modern large scale system.
+
+why does it matter?
+
+\begin{enumerate}
+    \item datasets become bigger 
+    \item horizontal scaling using commodity hardware is more convenient and cheaper than large mainframes.
+    \item however the parallelism it creates means new issues arise.
+    \item especially: how do you ensure consistency of data?
+        Maybe one node executes A then B while the other one does B then A.
+    \item Also creates issues of fault tolerance; many systems, each with relatively low individual resilience.
+    \item The problem of agreeing ona value is called ``distributed consensus problem''
+\end{enumerate}
+
+Maybe something about state machine replication?
+
