@@ -205,3 +205,14 @@ As of wednesday leader election is working using a very hacky transport (basical
 I am pretty sure the log replication works (the Raft code for it is tested), I just don't have any R2P2 implementation
 
 On the debugging side I wrote some ScaPy decoders for R2P2 and raft, which are very helpful to debug.
+
+On Thursday I tested that log replication worked.
+I also fixed the memory management code for the libuv backend.
+So now I have a server implementation that keeps a rast cluster alive and can still respond to normal r2p2 requests.
+
+things left to be done:
+
+1. serialize raft::Message properly
+2. add a replicated policy for r2p2 in which requests are appended to the log and sent to the application on commit
+    This might be challenging from a memory management point of view.
+3. Non leaders should forward requests to the leader.
