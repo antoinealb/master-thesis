@@ -1,1 +1,77 @@
-\chapter{Implementation}
+\chapter{Design \& Implementation}
+
+Something about libuv and how it is very convenient to prototype async stuff
+
+\section{Kernel Bypass}
+
+It is well known in the system engineering community that context switching between userland and kernel space can be expensive.
+For example, Google observed a 3x gain in throughput when bypassing the Linux kernel\cite{maglev}.
+
+To reduce the number of switches between kernel space and userland, we have two choices: moving more parts of the system in the kernel, or moving more parts of the system in userland.
+The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
+However, moving code in kernel space is not an easy task: kernel code usually has very little to no memory protection.
+This causes security threats and makes debugging harder.
+
+The second option, moving more parts of the system in userland is known as \emph{kernel bypass}.
+In this technique, the application embeds everything it needs, from \gls{nic} drivers to TCP.
+The main downside of this technique is that it prevents sharing of ressources between applications running on the server.
+For example, each networked application would need its own \gls{nic}.
+
+A key contribution of our work is the use of kernel bypass techniques to reduce latency.
+In particular, we are opposing our design to Kernel Paxos\cite{kernelpaxos}, which moved the Paxos consensus protocol in the Linux kernel with great results.
+We believe that using kernel bypass techniques can lead to similar, if not better performance without compromising process separation. 
+
+\section{Request Response Pair Protocol (R2P2)}
+
+Most current \gls{rpc} systems, such as Google's gRPC\cite{grpc} or Facebook's Thrift\cite{thrift} typically use TCP as their transport layer.
+This choice makes sense when running on the internet: packets may be lost or re-ordered, which TCP handles gracefully, and TCP's added latency is probably acceptable.
+However, when running inside a datacenter, packet loss or re-ordering is not as likely.
+In addition, TCP's latency is an issue for distributed systems, as a single user's request might generate many backend \gls{rpc} calls.
+
+Based on those observations, the \gls{dcsl} developped a new transport protocol specially designed for \glspl{rpc}.
+Unlike TCP, this new protocol is connectionless; each communication is made of a single request followed by a single response, hence the name of \gls{r2p2}.
+This reduces latency by removing the handshake round trip time of TCP.
+\gls{r2p2} uses UDP datagrams to send the requests or the reponses.
+An advantage of this approach is that the server that answers does not need to be the one the request was originally for.
+This has been succesfully used in the past to implement new load balancing techniques\cite{r2p2}.
+
+An interesting difference of \gls{r2p2} is that each request includes a field to specify how it should be routed.
+For example, it can be marked as ``Fixed'', meaning that the request must be served by the receiver, or ``load-balance'', in which case the router is free to redirect it to another server.
+We realized that it could be interesting to embed the replication mechanism in the transport layer.
+That way, a request could be marked as ``Replicated'', and then the server receiving it would automatically replicate it to other machines.
+Once the request is marked as ``committed'' by the consensus protocol, the request will be forwarded to the application layer.
+This means every node in the cluster would eventually see this request, and that all nodes would see the same order.
+
+Bringing the consensus protocol to the transport layer greatly simplifies the life of the application developper.
+Any networked application can be turned into a replicated version of it simply by changing a flag on the requests.
+Clients could even choose wether or not to ask for replication based on application-specific logic.
+For example, if stales read from a key-value store are acceptable, read request could be marked as ``load-balanced'', while write requests would be marked as ``replicated'' to ensure consistency.
+
+\section{Implementation language}
+
+We initially planned to write the Raft prototype in Rust, using the NetBricks\cite{netbricks} framework.
+The goal was to use Rust high level constructs to have compile time safety guarantees while maintaining good performance.
+However, it turned out that using Rust for this project was less than ideal for several reasons.
+
+NetBricks\cite{netbricks} is a Rust framework that provides everything needed to write high performance network applications in Rust.  % TODO: Something about Ogier writing R2P2 to rust
+It provides a full userland networking stack, from the DPDK bindings up to UDP socket implementation.
+Thanks to Rust's move semantics, NetBricks is capable of achieving zero copy processing of incoming packets, leading to very high performance.
+Unfortunately, it does not appear to be developped actively anymore, which is an issue due to the fast evolving nature of the language.
+The R2P2 Rust implementation\cite{ogier} written by another Master student appears to be incomplete at the moment.
+
+Another issue with Rust was that the current ``reference'' implementation of R2P2 is written in C using a custom userland UDP/IP stack.
+This means that the Rust / NetBricks code would have been difficult to integrate in the existing codebase, maybe even requiring a C rewrite.
+
+Due to all those factors, we decided to switch the implementation strategy to directly writing code that could be used in C.
+We use C++14, which is a lot more expressive than pure C.
+Move semantics are also available in this language since C++11.
+While not as useful as Rust's, mostly due to the lack of safety guarantees, they still form a very useful tool to reduce packet copying.
+
+\section{Message serialization}
+
+% TODO: is it really interesting ?
+
+\begin{itemize}
+    \item Custom code vs Protobuf
+\end{itemize}
+

@@ -1,3 +1,20 @@
 \chapter{Future work}
 
+\section{Disk backed persistency}
+
+\section{Max-latency batching}
+
+Random idea: Currently requests are either immediately replicated to the log or we wait for a configurable timeout to expire, then send a batch of request.
+This could lead to bad behaviour in heavily loaded servers (many small appendrequests) or create timeouts that are too important for the application.
+Maybe a smart batching policy is possible and should be designed in the protocol.
+
+\section{Consistency verification of the protocol}
+
+Jepsen\cite{jepsen} is an automated tool for checking of consistency properties in distributed systems.
+It works by randomly applying partitions, delays and packet reordering to distributed applications.
+So far it sucessfuly analyzed big open source project such as MongoDB, etcd, or Redis.
+We think we would gain a lot of confidence in the soundness of our implementation if a Jepsen testbench was available for it.
+It could be written using \gls{r2p2} as its only interface, so that the same test suite could be shared between many different \gls{r2p2} implementations.
+
 \chapter{Conclusion}
+
