@@ -7,8 +7,7 @@ Something about libuv and how it is very convenient to prototype async stuff
 It is well known in the system engineering community that context switching between userland and kernel space can be expensive.
 For example, Google observed a 3x gain in throughput when bypassing the Linux kernel\cite{maglev}.
 
-To reduce the number of switches between kernel space and userland, we have two choices: moving more parts of the system in the kernel, or moving more parts of the system in userland.
-The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
+To reduce the number of switches between kernel space and userland, we have two choices: moving more parts of the system in the kernel, or moving more parts of the system in userland.  The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
 However, moving code in kernel space is not an easy task: kernel code usually has very little to no memory protection.
 This causes security threats and makes debugging harder.
 
@@ -46,6 +45,22 @@ Bringing the consensus protocol to the transport layer greatly simplifies the li
 Any networked application can be turned into a replicated version of it simply by changing a flag on the requests.
 Clients could even choose wether or not to ask for replication based on application-specific logic.
 For example, if stales read from a key-value store are acceptable, read request could be marked as ``load-balanced'', while write requests would be marked as ``replicated'' to ensure consistency.
+
+\section{Choice of a consensus protocol}
+
+One of the earliest solution to the consensus problem is Lamport's Paxos algorithm\cite{paxos}.
+It is currently widely used, for example Google relies on it a lot to ensure correctness of its distributed systems\cite{chubby, paxoslive}.
+However, Paxos has two issues: first, it only solves part of the problem; some other ``bricks'' must be added to it to form a complete system.
+In addition to this, Paxos is known to be hard to understand, and even more to implement correctly.
+Most of its user rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
+This means modifying the consensus protocol for our application and chosent transport could be hard to do
+
+Fortunately for us, a simpler alternative to Paxos called Raft was recently introduce\cite{raft}.
+Raft was designed from the ground up to be simpler by cleanly separating the different parts of the problem.
+It also provides a complete solution, unlike Paxos which often requires additional, unproven extension\cite{paxoslive}.
+
+Other choices were also available such as ZooKeeper's ZAB\cite{zookeeper}, but those were not as well documented as Raft, and did not seem to provide advantages over it.
+
 
 \section{Implementation language}
 

@@ -216,3 +216,58 @@ things left to be done:
 2. add a replicated policy for r2p2 in which requests are appended to the log and sent to the application on commit
     This might be challenging from a memory management point of view.
 3. Non leaders should forward requests to the leader.
+    (After discussion with Marios this will not be done and the router is assumed to know who the raft leader is).
+
+# Week 10 (November 26th - December 2nd)
+
+- Implemented raft::Message serialization.
+- Implemented the r2p2 replicated policy.
+- Fixed some memory management issues when writing a raft client.
+
+Which means... we can now send replicated requests !
+I wrote a simple demo client, and the requests arrives at everybody in the cluster.
+If a node dies and joins again, requests are replayed at its application.
+
+Now I feel like the big two things to do are:
+
+1. Port it to DPDK, which will create the big question of how do you manage timers?
+    It might also require rewriting some basic code such as r2p2_init.
+2. Fix bugs
+3. Evaluate the solution through a latency perspective.
+
+Realized that there are some DPDK timers, just need to find a solution about them now.
+
+TODO: Also realized that my new CMake build system is not perfect because sometimes it compiles stuff with -DLINUX when it should not.
+    It could easily be fixed by implementing in in buf_list_send instead.
+    To be tested maybe?
+    *Note*: This was fixed later by never compiling linux and dpdk stuff in the same cmake build.
+
+# Week 11 (December 3rd - December 9th)
+
+Realized that the DPDK network stack makes the hypothesis that the IP addr is in network format and our implementation assumes it is in host format... will need some rework !
+
+Implemented a circular buffer for Raft log instead of an ever growing log.
+It is quite nicely implemented using "smart pointer" semantics around server pairs.
+They are moved into the circular buffer and get automatically released when leaving the buffer.
+Due to this I was able to run extremely long tests (1M messages) without leaking memory.
+
+I also started working on measuring the latency of the setup.
+For that I wrote a very simple client and starting optimizing the implementation for latency.
+Things I changed so far:
+
+- Send append entries requests immediately on replicate instead of waiting for periodic heartbeat.
+    Saves one timer on average, so about 10 ms, but it was an obvious change.
+- Removed debug output and build in release mode, went from 0.9 ms (localhost, libuv) to 0.27 ms.
+
+Interesting fact: I am currently at 295 us on replicated route (all localhost, libuv) vs 89 us on non replicated route.
+I think we can do better than that.
+
+Notes on Kernel Paxos benchmark:
+
+- 64 bytes per message & 1 kB per message tests
+- 1 leader, 4 servers in protocol total, varying number of clients
+
+key performance data:
+
+max throughput on small messages: 8k agreements / second on a single client.
+    Reaching 100k agreements / second with one node.
