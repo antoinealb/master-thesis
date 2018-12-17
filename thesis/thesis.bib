@@ -1,80 +1,84 @@
 @inproceedings{chubby,
-  title={The Chubby lock service for loosely-coupled distributed systems},
-  author={Burrows, Mike},
-  booktitle={Proceedings of the 7th symposium on Operating systems design and implementation},
-  pages={335--350},
-  year={2006},
-  organization={USENIX Association}
+    title={The Chubby lock service for loosely-coupled distributed systems},
+    author={Burrows, Mike},
+    booktitle={Proceedings of the 7th symposium on Operating systems design and implementation},
+    pages={335--350},
+    year={2006},
+    organization={USENIX Association}
 }
 
 @article{kernelpaxos,
-  title={Kernel Paxos},
-  author={Esposito, Emanuele Giuseppe and Coelho, Paulo and Pedone, Fernando}
+    title={Kernel Paxos},
+    author={Esposito, Emanuele Giuseppe and Coelho, Paulo and Pedone, Fernando}
 }
 
-@article{r2p2,
-  title={Tail-Latency-Tolerant Load Balancing of Microsecond-scale RPCs},
-  author={Kogias, Marios and Bugnion, Edouard}
+@inproceedings{r2p2,
+    title={{Tail-Latency-Tolerant Load Balancing of Microsecond-scale RPCs}},
+    author={Kogias, Marios and Bugnion, Edouard},
+    year={2019},
+    organization={USENIX Association},
+    booktitle={Proceedings of the 16th symposium on Networked Systems design and implementation},
+    notes={Unpublished at time of writing},
 }
 
 @inproceedings{netbricks,
-  title={NetBricks: Taking the V out of NFV.},
-  author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
-  booktitle={OSDI},
-  pages={203--216},
-  year={2016}
+    title={{NetBricks: Taking the V out of NFV.}},
+    author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
+    booktitle={OSDI},
+    pages={203--216},
+    year={2016}
 }
 
 @book{ogier,
-  title={A Zero Copy Key-Value Store in Rust},
-  author={Bouvier, Ogier},
-  year={2018},
+    title={A Zero Copy Key-Value Store in Rust},
+    author={Bouvier, Ogier},
+    year={2018},
 }
 
 @inproceedings{paxoslive,
-  title={Paxos made live: an engineering perspective},
-  author={Chandra, Tushar D and Griesemer, Robert and Redstone, Joshua},
-  booktitle={Proceedings of the twenty-sixth annual ACM symposium on Principles of distributed computing},
-  pages={398--407},
-  year={2007},
-  organization={ACM}
+    title={Paxos made live: an engineering perspective},
+    author={Chandra, Tushar D and Griesemer, Robert and Redstone, Joshua},
+    booktitle={Proceedings of the twenty-sixth annual ACM symposium on Principles of distributed computing},
+    pages={398--407},
+    year={2007},
+    organization={ACM}
 }
 
 @article{paxos,
-  title={The implementation of reliable distributed multiprocess systems},
-  author={Lamport, Leslie},
-  journal={Computer networks},
-  volume={2},
-  number={2},
-  pages={95--114},
-  year={1978},
-  publisher={Citeseer}
+    title={The implementation of reliable distributed multiprocess systems},
+    author={Lamport, Leslie},
+    journal={Computer networks},
+    volume={2},
+    number={2},
+    pages={95--114},
+    year={1978},
+    publisher={Citeseer}
 }
 
 @inproceedings{raft,
-  title={In search of an understandable consensus algorithm.},
-  author={Ongaro, Diego and Ousterhout, John K},
-  booktitle={USENIX Annual Technical Conference},
-  pages={305--319},
-  year={2014}
+    title={In search of an understandable consensus algorithm.},
+    author={Ongaro, Diego and Ousterhout, John K},
+    booktitle={USENIX Annual Technical Conference},
+    pages={305--319},
+    year={2014}
 }
 
 @inproceedings{zookeeper,
-  title={ZooKeeper: Wait-free Coordination for Internet-scale Systems.},
-  author={Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio Paiva and Reed, Benjamin},
-  booktitle={USENIX annual technical conference},
-  volume={8},
-  number={9},
-  year={2010},
-  organization={Boston, MA, USA}
+    title={ZooKeeper: Wait-free Coordination for Internet-scale Systems.},
+    author={Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio Paiva and Reed, Benjamin},
+    booktitle={USENIX annual technical conference},
+    volume={8},
+    number={9},
+    year={2010},
+    organization={Boston, MA, USA}
 }
 
 @inproceedings{maglev,
-  title={Maglev: A Fast and Reliable Software Network Load Balancer.},
-  author={Eisenbud, Daniel E and Yi, Cheng and Contavalli, Carlo and Smith, Cody and Kononov, Roman and Mann-Hielscher, Eric and Cilingiroglu, Ardas and Cheyney, Bin and Shang, Wentao and Hosein, Jinnah Dylan},
-  booktitle={NSDI},
-  pages={523--535},
-  year={2016}
+    title={Maglev: A Fast and Reliable Software Network Load Balancer.},
+    author={Eisenbud, Daniel E and Yi, Cheng and Contavalli, Carlo and Smith, Cody and Kononov, Roman and Mann-Hielscher, Eric and Cilingiroglu, Ardas and Cheyney, Bin and Shang, Wentao and Hosein, Jinnah Dylan},
+    booktitle={NSDI},
+    pages={523--535},
+    year={2016}
 }
 
 @misc{jepsen,
@@ -84,15 +88,23 @@
     year={2013},
 }
 
-@article{thrift,
-  title={Thrift: Scalable cross-language services implementation},
-  author={Slee, Mark and Agarwal, Aditya and Kwiatkowski, Marc},
-  journal={Facebook White Paper},
-  year={2007}
+@techreport{thrift,
+    title={Thrift: Scalable cross-language services implementation},
+    author={Slee, Mark and Agarwal, Aditya and Kwiatkowski, Marc},
+    institution = {Facebook},
+    year={2007}
 }
 
 @online{grpc,
-title = {{gRPC, A high performance RPC framework}},
-howpublished = {\url{https://grpc.io/}},
+    title = {{gRPC, A high performance RPC framework}},
+    howpublished = {\url{https://grpc.io/}},
+    year={2015},
+}
+
+@online{dpdk,
+    title = {{DPDK, The Data Plane Development Kit}},
+    key = {DPDK},
+    howpublished = {\url{https://www.dpdk.org/}},
+    organization = {Intel}
 }
 

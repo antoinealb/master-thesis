@@ -1,5 +1,29 @@
 \chapter{Evaluation}
 
+In this chapter, we measure the performance of our implementation.
+In particular, we will focus on two key characteristics: latency and throughput.
+Throughput is defined as the number of messages than can be succesfully replicated per second.
+Latency is the time between the sending of a request and the reception of the reply (measured at the client).
+
+We designed three different experiments to explore how our system reacts to different conditions.
+In the first experiment, we measure the latency of a replicated operation under different fixed throughputs.
+This will allow us to measure the peak throughput of the system, defined as the point at which the latency increases infinitely because requests are queued.
+This experiment was carried using a cluster of three nodes.
+
+In the second exeperiment, we measured the impact of cluster size on latency.
+Since the leader must wait for a bigger quorum of machines to acknowledge the request, we expect the latency to go up with the number of machines.
+We also include the case where there is only one machine in the group, i.e. when non replicated requests are used.
+This was conducted at a fixed throughput.
+
+For the last experiment, we wanted to measure the impact of leader failure on the system's throughput.
+To do so, we modified the code of the server program to fall back to being a follower after a given number of messages was sent.
+A new leader election would then take place and the requests sent while the cluster was leaderless would be lost.
+
+All experiments were done on machines equipped with two Intel Xeon E5-2650 CPUs running at \SI{2.6}{\giga\hertz}.
+Each machine had \SI{62}{\giga\byte} of RAM, out of which XXX were used for the application. % TODO: How many RAM for the app?
+The machines were equipped with Intel~82599ES \glspl{nic} connected to a \SI{10}{\giga\bit\per\second} switch.
+All the server machines were running the kernel bypass implementation of the stack, while the client was running the userland one.
+
 \section{Latency - Throughput}
 
 replicated vs non replicated
@@ -12,3 +36,24 @@ at fixed load
 
 including leader recovery
 
+\section{Comparison with Kernel Paxos}
+
+Kernel Paxos\cite{kernelpaxos} is an earlier attempts to reduce consensus protocol latency by removing the cost of context switching.
+In order to do so, they implemented the Paxos protocol as a set of Linux kernel modules.
+They had to port the libpaxos implementation, which was intended to run in userland, to things like kernel memory allocation.
+Here are the main differences between their approach and ours:
+
+\begin{itemize}
+    \item Kernel Paxos is implemented as a set of Linux kernel modules.
+        Our implementation uses Intel's DPDK\cite{dpdk} to access the \gls{nic} from userland.
+    \item Kernel Paxos uses the Paxos algorithm.
+        Our solution uses Raft.
+    \item Kernel Paxos uses Ethernet frames to send its messages.
+        This requires all machines to be in the same broadcast domain.
+        Our implementation runs on top of UDP/IP and therefore can be routed.
+\end{itemize}
+
+The Kernel Paxos source code is freely available on the internet\footnote{\url{https://github.com/esposem/Kernel_Paxos}}.
+Unfortunately we were not able to run it on our experimental setup.
+Therefore, direct performance comparison might not be very accurate.
+In particular, their node's CPU is much older than ours (2008 vs 2012).
