@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt, singlepage]{scrbook}
+\documentclass[a4paper, 12pt, singlepage]{report}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -28,6 +28,12 @@
 \newacronym{nic}{NIC}{Network Interface Card}
 \newacronym{rpc}{RPC}{Remote Procedure Call}
 \newacronym{dcsl}{DCSL}{Data Center Systems Laboratory}
+
+\lstset{language=C++,frame=single}
+
+\newfloat{lstfloat}{htbp}{lop}
+\floatname{lstfloat}{Listing}
+\def\lstfloatautorefname{Listing} % needed for hyperref/auroref
 
 \begin{document}
 

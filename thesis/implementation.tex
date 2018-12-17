@@ -18,7 +18,7 @@ For example, each networked application would need its own \gls{nic}.
 
 A key contribution of our work is the use of kernel bypass techniques to reduce latency.
 In particular, we are opposing our design to Kernel Paxos\cite{kernelpaxos}, which moved the Paxos consensus protocol in the Linux kernel with great results.
-We believe that using kernel bypass techniques can lead to similar, if not better performance without compromising process separation. 
+We believe that using kernel bypass techniques can lead to similar, if not better performance without compromising process separation.
 
 \section{Request Response Pair Protocol (R2P2)}
 
@@ -45,6 +45,26 @@ Bringing the consensus protocol to the transport layer greatly simplifies the li
 Any networked application can be turned into a replicated version of it simply by changing a flag on the requests.
 Clients could even choose wether or not to ask for replication based on application-specific logic.
 For example, if stales read from a key-value store are acceptable, read request could be marked as ``load-balanced'', while write requests would be marked as ``replicated'' to ensure consistency.
+
+\subsection{R2P2 API}
+
+The \gls{r2p2} library API looks nothing like a BSD socket API.
+Instead it is \emph{event oriented}: the user of the library provides a set of callbacks that are called when a request is received (in the case of a server) or when a response arrives (in the case of a client).
+Those callbacks also receive a per-connection argument which can be used to track state.
+The core of the \gls{r2p2} API can be seen in Listing~\ref{listing:r2p2-client-api} and \ref{listing:r2p2-server-api}.
+
+Such event-oriented API maps well to the semantics of either high performance I/O syscalls (e.g. Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
+
+\begin{lstfloat}
+\lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} API summary}]{code_snippets/r2p2_client_api.c}
+\end{lstfloat}
+
+\begin{lstfloat}
+\lstinputlisting[label=listing:r2p2-server-api,caption={\gls{r2p2} server API}]{code_snippets/r2p2_server_api.c}
+\end{lstfloat}
+
+With our proposal of bringing the consensus protocol to the transport layer, switching a normal application to a distributed, consistent one is simply a matter of changing the \texttt{routing\_policy} field from \texttt{FIXED\_ROUTE} to \texttt{REPLICATED\_ROUTE}.
+We hope that this will create a re-usable framework and that more developper will be able to write fault tolerant systems as a result.
 
 \section{Choice of a consensus protocol}
 
