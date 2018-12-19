@@ -79,8 +79,14 @@ Fortunately for us, a simpler alternative to Paxos called Raft was recently intr
 Raft was designed from the ground up to be simpler by cleanly separating the different parts of the problem.
 It also provides a complete solution, unlike Paxos which often requires additional, unproven extension\cite{paxoslive}.
 
-Other choices were also available such as ZooKeeper's ZAB\cite{zookeeper}, but those were not as well documented as Raft, and did not seem to provide advantages over it.
+Another possible choice would have been ZooKeeper's ZAB\cite{zookeeper}, but was not as well documented as Raft.
+In addition, it appeared to provide primitives that were less general purposes than a replicated log.
 
+Despite the availability of excellent production grade Raft implementations, we decided to implement our own.
+Most existing Raft implementations are using high level languages such as Go, which are not suited for low latency programming.
+Other implementations in C or C++ make a lot of hypothesis on the underlying platform.
+For all those reasons, it was deemed easier to do it ourself, using experience gathered by doing a prototype in Python.
+The resulting implementation is pretty small, at about 1000 lines of C++ code.
 
 \section{Implementation language}
 
