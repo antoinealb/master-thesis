@@ -17,6 +17,8 @@ thesis-pdf:
   script:
     - cd thesis
     - latexmk -pdf thesis.tex
+    - makeglossaries thesis
+    - pdflatex thesis.pdf
   artifacts:
     paths:
       - thesis/thesis.pdf

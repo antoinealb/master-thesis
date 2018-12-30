@@ -36,6 +36,7 @@
 \floatname{lstfloat}{Listing}
 \def\lstfloatautorefname{Listing} % needed for hyperref/auroref
 
+\makeglossaries
 \begin{document}
 
 \setcounter{tocdepth}{1}
@@ -50,6 +51,8 @@
 \include{implementation}
 \include{evaluation}
 \include{conclusion}
+
+\printglossary[type=\acronymtype,title=Abbreviations]
 
 \nocite{*}
 \bibliographystyle{ieeetr}
