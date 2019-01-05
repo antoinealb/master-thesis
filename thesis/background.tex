@@ -140,19 +140,19 @@ For example, if stales read from a key-value store are acceptable, read request 
 
 \subsection{R2P2 API}
 
-The \gls{r2p2} library API looks nothing like a BSD socket API.
+The \gls{r2p2} library \gls{api} looks nothing like a BSD socket \gls{api}.
 Instead it is \emph{event oriented}: the user of the library provides a set of callbacks that are called when a request is received (in the case of a server) or when a response arrives (in the case of a client).
 Those callbacks also receive a per-connection argument which can be used to track state.
-The core of the \gls{r2p2} API can be seen in Listing~\ref{listing:r2p2-client-api} and \ref{listing:r2p2-server-api}.
+The core of the \gls{r2p2} \gls{api} can be seen in Listing~\ref{listing:r2p2-client-api} and \ref{listing:r2p2-server-api}.
 
-Such event-oriented API maps well to the semantics of either high performance I/O syscalls (e.g. Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
+Such event-oriented \gls{api} maps well to the semantics of either high performance I/O syscalls (e.g. Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
 
 \begin{lstfloat}
-\lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} API summary}]{code_snippets/r2p2_client_api.c}
+\lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} \gls{api} summary}]{code_snippets/r2p2_client_api.c}
 \end{lstfloat}
 
 \begin{lstfloat}
-\lstinputlisting[label=listing:r2p2-server-api,caption={\gls{r2p2} server API}]{code_snippets/r2p2_server_api.c}
+\lstinputlisting[label=listing:r2p2-server-api,caption={\gls{r2p2} server \gls{api}}]{code_snippets/r2p2_server_api.c}
 \end{lstfloat}
 
 With our proposal of bringing the consensus protocol to the transport layer, switching a normal application to a distributed, consistent one is simply a matter of changing the \texttt{routing\_policy} field from \texttt{FIXED\_ROUTE} to \texttt{REPLICATED\_ROUTE}.

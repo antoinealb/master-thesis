@@ -6,9 +6,9 @@ The current implementation only stores requests in memory.
 This means that requests are not truly persistent: if all nodes were to come offline, committed data would be lost.
 To avoid this, the replicated log would need to be persisted to non volatile storage.
 
-However our application cannot use the standard Linux filesystem API.due to the latency of syscalls.
+However our application cannot use the standard Linux filesystem \gls{api}.due to the latency of syscalls.
 Recently new technologies have emerged to use persistent storage (particularly \glspl{ssd}) without relying on the kernel.
-One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techniques and presents an API similar to DPDK.
+One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techniques and presents an \gls{api} similar to DPDK.
 Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO.
 This works by submitting filesystem operations in a ring buffer, which will get collected and executed by the kernel later.
 
