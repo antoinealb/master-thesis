@@ -1,0 +1,76 @@
+\makeatletter
+\newgeometry{centering}
+\begin{titlepage} % Suppresses displaying the page number on the title page and the subsequent page counts as page 1
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for horizontal lines, change thickness here
+
+	\center
+
+	%------------------------------------------------
+	%	Headings
+	%------------------------------------------------
+
+	\textsc{\LARGE Ecole Polytechnique Fédérale de Lausanne}\\[1.5cm] % Main heading such as the name of your university/college
+
+	\textsc{\Large School of Computer and Communication Sciences}\\[0.5cm] % Major heading such as course name
+
+	\textsc{\large Data Center Systems Laboratory}\\[0.5cm] % Minor heading such as course title
+
+	%------------------------------------------------
+	%	Title
+	%------------------------------------------------
+
+	\HRule\\[0.4cm]
+
+	{\huge\bfseries \@title}\\[0.4cm] % Title of your document
+
+	\HRule\\[1.5cm]
+
+	%------------------------------------------------
+	%	Author(s)
+	%------------------------------------------------
+
+	\begin{minipage}{0.4\textwidth}
+		\begin{flushleft}
+			\large
+			\textit{Author}\\
+			\@author
+		\end{flushleft}
+	\end{minipage}
+	~
+	\begin{minipage}{0.4\textwidth}
+		\begin{flushright}
+			\large
+			\textit{Supervisor}\\
+			Marios Kogias
+		\end{flushright}
+	\end{minipage}
+
+	\vfill\vfill\vfill % Position the date 3/4 down the remaining page
+
+	{\large\@date} % Date, change the \today to a set date if you want to be precise
+
+	%------------------------------------------------
+	%	Logo
+	%------------------------------------------------
+
+	%\vfill\vfill
+	%\includegraphics[width=0.2\textwidth]{placeholder.jpg}\\[1cm] % Include a department/university logo - this will require the graphicx package
+
+	%----------------------------------------------------------------------------------------
+
+	\vfill % Push the date up 1/4 of the remaining page
+
+\end{titlepage}
+\restoregeometry
+\pagebreak
+
+\hspace{0pt}
+\vfill
+
+\begin{dedication}
+    To Guido, Jocelyne \& Ariane, for encouraging me to become who I am.
+    As Ian M. Banks said, ``My gratitude extends beyond the limits of my capacity to express it.''.
+\end{dedication}
+\vfill
+
+\clearpage

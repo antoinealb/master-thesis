@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt, singlepage]{report}
+\documentclass[a4paper, 12pt, singlepage]{book}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -9,6 +9,7 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{tablefootnote}
+\usepackage{geometry}
 \usepackage{verbatim}
 \usepackage{multirow}
 \usepackage{subcaption}
@@ -23,6 +24,10 @@
 \title{Kernel Bypass for fast replicated RPCs }
 \author{Antoine Albertelli}
 \date{Fall semester, 2018}
+
+\newenvironment{dedication}
+     {\vspace{6ex}\begin{quotation}\begin{center}\begin{em}}
+     {\par\end{em}\end{center}\end{quotation}}
 
 \newacronym{r2p2}{R2P2}{Request Response Pair Protocol}
 \newacronym{nic}{NIC}{Network Interface Card}
@@ -42,9 +47,13 @@
 
 \setcounter{tocdepth}{1}
 
-\maketitle
+\frontmatter
+
+\include{titlepage}
 
 \tableofcontents
+
+\mainmatter
 
 \include{introduction}
 \include{background}
@@ -52,6 +61,8 @@
 \include{implementation}
 \include{evaluation}
 \include{conclusion}
+
+\backmatter
 
 \printglossary[type=\acronymtype,title=Abbreviations]
 
