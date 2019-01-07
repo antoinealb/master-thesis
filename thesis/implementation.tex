@@ -3,6 +3,20 @@
 
 Something about libuv and how it is very convenient to prototype async stuff
 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{client_server_interaction}
+    \caption{Typical client server interaction for a replicated service call.
+        1. The request is sent from the client to the leader.
+        2. The leader replicates the request to all followers.
+        3. The followers acknowledge the replication.
+        4. Once the request is replicated on a majority of servers the leader commits it.
+        5. The commited request is sent to the application (on every node) and then the reply is sent back to the client.
+    \label{fig:client-server-interaction}
+    }
+\end{figure}
+
 \section{Choice of a consensus protocol}
 
 One of the earliest solution to the consensus problem is Lamport's Paxos algorithm\cite{paxos}.
@@ -54,9 +68,21 @@ While not as useful as Rust's, mostly due to the lack of safety guarantees, they
 \end{itemize}
 
 
-\section{DPDK}
 
 \section{Message Routing}
+
+In Raft, only the leader can send new mesasges.
+This keeps the protocol simpler by only having data flowing from the leader to the followers.
+On the other hand, it means that we must also have a way to direct client queries to the leader.
+
+In the original Raft paper\cite{raft}, the followers will redirect clients to the leader if contacted directly.
+However, this is not optimal from a tail latency perspective: a client that picks a follower as a destination will see an additional \gls{rtt} to its request.
+
+Fortunately, \gls{r2p2} was implemented with load balancing semantics in mind.
+We can therefore extend the \gls{r2p2} load balancer to always propagate replicated requests to the current leader.
+While this haven't been done yet, it could be implementing by having the load balancer listening to Raft heartbeat messages.
+
+For our benchmarking we manually pointed the benchmark client to the elected leader.
 
 \section{Log}
 
@@ -64,3 +90,17 @@ RAM based
 
 Each element is one request
 
+\section{DPDK}
+
+\section{Userland implementation}
+
+While kernel bypass offers the best performance, it is not always possible to use it (i.e. when using a \gls{nic} is shared between applications).
+Our current implementation can therefore either be compiled to use DPDK (and a custom UDP/IP stack) or to use the kernel networking facilities.
+In this second case, only \gls{r2p2} is implemented in the application; the rest runs in-kernel.
+
+To achieve high performance and stay close to DPDK's event based model, we use asynchronous I/O facilities.
+Our first implementation used Linux's \texttt{epoll} directly, making it non-portable.
+We rewrote it to use libuv instead, which abstracts the different asynchronous I/O mechanisms on Linux, BSD and Windows.
+
+This means that the current implementation can run as a normal networked component on all major platforms.
+This allows for a much easier development experience than running DPDK directly, and can even be used in production with good performance.
