@@ -1,7 +1,7 @@
 \makeatletter
 \newgeometry{centering}
-\begin{titlepage} % Suppresses displaying the page number on the title page and the subsequent page counts as page 1
-	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for horizontal lines, change thickness here
+\begin{titlepage}
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 	\center
 
@@ -9,11 +9,9 @@
 	%	Headings
 	%------------------------------------------------
 
-	\textsc{\LARGE Ecole Polytechnique Fédérale de Lausanne}\\[1.5cm] % Main heading such as the name of your university/college
+	\textsc{\LARGE Ecole Polytechnique Fédérale de Lausanne}\\[1cm]
 
-	\textsc{\Large School of Computer and Communication Sciences}\\[0.5cm] % Major heading such as course name
-
-	\textsc{\large Data Center Systems Laboratory}\\[0.5cm] % Minor heading such as course title
+	\textsc{\Large Data Center Systems Laboratory}\\[0.5cm]
 
 	%------------------------------------------------
 	%	Title
@@ -21,7 +19,7 @@
 
 	\HRule\\[0.4cm]
 
-	{\huge\bfseries \@title}\\[0.4cm] % Title of your document
+	{\huge\bfseries \@title}\\[0.4cm]
 
 	\HRule\\[1.5cm]
 
@@ -45,24 +43,14 @@
 		\end{flushright}
 	\end{minipage}
 
-	\vfill\vfill\vfill % Position the date 3/4 down the remaining page
+    \vfill
 
-	{\large\@date} % Date, change the \today to a set date if you want to be precise
+    {\large\@date}\\
 
-	%------------------------------------------------
-	%	Logo
-	%------------------------------------------------
-
-	%\vfill\vfill
-	%\includegraphics[width=0.2\textwidth]{placeholder.jpg}\\[1cm] % Include a department/university logo - this will require the graphicx package
-
-	%----------------------------------------------------------------------------------------
-
-	\vfill % Push the date up 1/4 of the remaining page
-
+	\includegraphics[width=86mm]{epfl.pdf}
 \end{titlepage}
 \restoregeometry
-\pagebreak
+\cleardoublepage
 
 \hspace{0pt}
 \vfill
