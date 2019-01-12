@@ -35,9 +35,25 @@
 6. Related work
     - Marios can help with that
 7. Future work
+    - Rust / Ixy
 8. Conclusion
 
 break ideas into paragraphs, with a few keywords per paragraph
 then only starts writing
 
 above 30 pages is a reasonable goal
+
+# Title ideas
+
+key themes:
+
+- RPC
+- Transport Protocols
+- Kernel Bypass
+- Consensus
+
+* kernel bypass for fast replicated RPC
+* Replicating Remote Procedure Calls at the Transport Layer
+* Bringing Distributed Consensus to the Transport Layer
+* Fast, Replicated Remote Procedure Calls
+* Adding some consensus in your transport protocol

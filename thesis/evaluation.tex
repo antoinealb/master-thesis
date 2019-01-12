@@ -21,21 +21,38 @@ To do so, we modified the code of the server program to fall back to being a fol
 A new leader election would then take place and the requests sent while the cluster was leaderless would be lost.
 
 All experiments were done on machines equipped with two Intel Xeon E5-2650 CPUs running at \SI{2.6}{\giga\hertz}.
-Each machine had \SI{62}{\giga\byte} of RAM, out of which XXX were used for the application. % TODO: How many RAM for the app?
+Each machine had \SI{64}{\giga\byte} of RAM, out of which XXX were used for the application. % TODO: How many RAM for the app?
 The machines were equipped with Intel~82599ES \glspl{nic} connected to a \SI{10}{\giga\bit\per\second} switch.
 All the server machines were running the kernel bypass implementation of the stack, while the client was running the userland one.
 
 \section{Latency - Throughput}
 
-replicated vs non replicated
+In this experiment, we varied the load on the cluster and measured the 99th percentile latency of the requests.
+The idea here is that the latency graph should exhibit a large vertical asymptote as we reach the maximum capacity of the system. 
+To have a baseline performance, We also ran the same load test on a non-replicated cluster.
+
+This experiment was performed on a cluster of three machines.
+The result can be seen on Figure~\ref{fig:latency-throughput}.
 
 \section{Impact of cluster size}
 
-at fixed load
+In this experiment, the goal was to see how the number of replicas impacted system performance.
+Adding new machines to the system increases its reliablity by increasing the number of failures required to have a loss of consistency.
+However, our intuition about the system also led us to expect an increased tail latency.
 
-\section{Latency over time}
+The results can be see on Figure~\ref{fig:cluster-size}.
 
-including leader recovery
+\section{Impact of leader crash}
+
+Since in Raft all the requests go through the leader, we wanted to evaluate the impact of a leader crash on throughput.
+Our system does not queue requests in a situation with no leaders; they are simply dropped.
+Therefore we expect the throughput to drop to zero during leader re-election, then to rise back to normal operating levels.
+
+The results can be seen on Figure~\ref{fig:leader-crash}.
+Note that the duration of the re-election period depends on the chosen values for the Raft timers.
+In this situation, the heartbeat period is set to \SI{10}{\milli\second}, and the election timer period is uniformly distributed between \SIrange{500}{1000}{\milli\second}.
+As they could be tuned to other values, this is more of a qualitative result.
+
 
 \section{Comparison with Kernel Paxos}
 
@@ -49,7 +66,7 @@ Here are the main differences between their approach and ours:
         Our implementation uses Intel's DPDK\cite{dpdk} to access the \gls{nic} from userland.
     \item Kernel Paxos uses the Paxos algorithm.
         Our solution uses Raft.
-    \item Kernel Paxos uses Ethernet frames to send its messages.
+    \item Kernel Paxos uses raw Ethernet frames to send its messages.
         This requires all machines to be in the same broadcast domain.
         Our implementation runs on top of UDP/IP and therefore can be routed.
 \end{itemize}
@@ -58,3 +75,18 @@ The Kernel Paxos source code is freely available on the internet\footnote{\url{h
 Unfortunately we were not able to run it on our experimental setup.
 Therefore, direct performance comparison might not be very accurate.
 In particular, their node's CPU is much older than ours (2008 vs 2012).
+
+The most interesting result is the latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}, which is one \gls{rtt}.
+In comparison, we achieve a median latency of \SI{104}{\micro\second}, which is slower.  % TODO: Check that latency number
+This is due to a Paxos optimization called Fast Paxos\cite{lamport2006fast}, in which clients bypass the leader, saving one network hop.
+
+While Fast Paxos could be theoretically applied to our system, we decided not to for several reasons.
+First, we already had a working Raft implementation at this point in our work, and Fast Paxos is significantly harder to implement than Paxos.
+Then, Fast Paxos requires more machines to reach consensus: $2/3$ of the nodes must be healthy for a value to be accepted.
+This means that to handle $n$ failures, Fast Paxos requires $3n + 1$ replicas, where classic Paxos and Raft only require $2n + 1$.
+Finally, under high loads, the probability of message collision is quite high, and in case of collisions the number of network hops in Fast Paxos is the same as with Classic Paxos or Raft.
+
+On the throughput side, Kernel Paxos claims \SI{19}{\kilo msg\per\second}, whereas our implementation reached \SI{42}{\kilo msg\per\second}, a $2.2x$ increase. % TODO: Check this throughput number
+According to Kernel Paxos authors, their throughput is bound by CPU performance on the proposers.
+We were not able to verify this claim, as we were not able to run their implementation in our cluster.
+As they did not publish the model of their CPU for their \SI{10}{\giga\bit\per\second} experiments, a direct comparison is hard to do.

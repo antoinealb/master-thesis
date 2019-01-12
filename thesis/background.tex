@@ -3,11 +3,14 @@
 
 \section{Distributed Consensus}
 
+Distributed consensus is often based on asynchronous state machine replication.
+In this model, each node in the cluster has one instance of a state machine running.
+Instructions to this state machines are replicated across the instances, making sure that the order matches for all the state machines.
+Since the start state is also specified, this means we will have exactly the same state on each node after a given number of instructions have been executed.
 
-why does it matter?
-
-Maybe something about state machine replication?
-
+Typical replication protocols provide $2n + 1$ replication, meaning a cluster can stay alive as long as a majority of nodes is alive.
+For example, if there is 5 nodes in the cluster, up to two could go offline without impacting the availability or the consistency of the data.
+One downside of this is that as the number of node increases, the network load will also increase with it.
 
 \subsection{Raft Consensus Protocol}
 
@@ -22,10 +25,13 @@ Each node can be in one of three states: \emph{follower}, \emph{candidate} or \e
 During normal operation (when a leader emerged), a cluster contains exactly one leader and zero candidates.
 We will start by assuming that everything is normal to explain how the protocol works, then explain what changes during leader election.
 
-SOMETHING ABOUT TERMS
-* exactly one leader per term
+One important concept in Raft is the \emph{term}.
+One term is defined as a period of time in which there is at most one leader.
+This means that in order to change the leader, a new term must be changed.
+This is implemented through the term number, an always increasing counter.
+Note that not all terms have leader, for example if no leader could be elected, the term number is increased before starting a new round of elections.
 
-Each entry in the Raft replicated log is tagged with an \emph{index}, which is a monotonic counter, and a term number.
+Each entry in the Raft replicated log is tagged with an \emph{index}, which is a monotonic counter, and the term number.
 
 \subsection{Log Replication}
 
@@ -77,10 +83,10 @@ It will then transition to the candidate state and send \emph{Vote} requests to 
 
 Once a node receives a \emph{Vote} request, it decides wether or not to grant its vote to the requesting candidate.
 To do so, it will first check that the candidate's term is more recent than its own.
-It will also check that the candidate's log is at least as complete as its own.
+It will also check that the candidate's log is at least as complete as its own
 \footnote{This ensures that the leader's log contains all committed entries.
     If this was not the case, then the leader would start replacing committed entries, leading to loss of consistency.
-}
+}.
 Finally, it sends a reply to the candidate containing wether or not it grants its vote to the candidate.
 
 If a candidate reaches majority, then it transitions to the leader role and starts sending heartbeats.
@@ -90,33 +96,83 @@ To avoid conflicting elections where no majority can occur, the timeout duration
 
 \section{Transport protocols}
 
-R2P2
+% what is a transport protocol
+%   Part of the internet infra
+%     provides many functionalities: multiplexing, congestion control, reliable delivery, connection establishement, etc
+%     handles delivery of the data to the application
+
+Transport protocols build on the the network (IP) layer and provide services to the applications.
+The most important service is multiplexing; several application can use the network, and the transport routes information to them.
+This is done using port numbers.
+Historically, IP was used with two transport protocols: UDP and TCP.
+
+While UDP only provides connection multiplexing, TCP is much more complicated.
+It provides a stream interface, which guarantees that bytes that enter the connection will arrive in the same order at the other end (reliable delivery).
+In order to do so, TCP uses has to establish a connection and then acknowledge packets.
+It also provides congestion control functionality to avoid link saturation.
+
+All those features made TCP the logical choice when sending data on the Internet, which is pretty unreliable.
+However, when running inside a datacenter, packet loss or re-ordering is not as likely.
+In addition to this, TCP connection tracking requires requires a lot of messages to send some data, increasing latency (Figure~\ref{fig:tcp_lifecycle}).
+
+% 
+% historical: tcp and udp
+%     nowadays hard to change this due to things such as nat
+% 
+% new protocols such as quic and 
+% 
+% need for a RPC protocol, lots used HTTP
+% 
+% connection handshake: maybe a tcp connection establishment diagram ?
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{tcp_lifecycle}
+    \caption{Lifecycle of a typical \gls{rpc} over TCP (such as HTTP) interaction.
+        We see that the latency before the reply is available takes at least two \gls{rtt}.
+    \label{fig:tcp_lifecycle}
+    }
+\end{figure}
+
 
 \subsection{Request Response Pair Protocol (R2P2)}
 
 Most current \gls{rpc} systems, such as Google's gRPC\cite{grpc} or Facebook's Thrift\cite{thrift} typically use TCP as their transport layer.
-This choice makes sense when running on the internet: packets may be lost or re-ordered, which TCP handles gracefully, and TCP's added latency is probably acceptable.
-However, when running inside a datacenter, packet loss or re-ordering is not as likely.
-In addition, TCP's latency is an issue for distributed systems, as a single user's request might generate many backend \gls{rpc} calls.
-
-Based on those observations, the \gls{dcsl} developped a new transport protocol specially designed for \glspl{rpc}.
+In order to address TCP's shortcomings, the \gls{dcsl} developped a new transport protocol specially designed for \glspl{rpc}.
 Unlike TCP, this new protocol is connectionless; each communication is made of a single request followed by a single response, hence the name of \gls{r2p2}.
 This reduces latency by removing the handshake round trip time of TCP.
-\gls{r2p2} uses UDP datagrams to send the requests or the reponses.
-An advantage of this approach is that the server that answers does not need to be the one the request was originally for.
+
 This has been succesfully used in the past to implement new load balancing techniques\cite{r2p2}.
+Since it was designed with load balancing, each \gls{r2p2} request includes includes a field to specify how it should be routed.
+For example, it can be marked as ``Fixed'', meaning that the request must be served by the receiver, or ``load-balanced'', in which case the router is free to redirect it to another server.
+Since \gls{r2p2} has no notion of connections, the reply can be sent directly to the client instead of having an additional trip through the load balancer (Figure~\ref{fig:load_balancing}).
 
-An interesting difference of \gls{r2p2} is that each request includes a field to specify how it should be routed.
-For example, it can be marked as ``Fixed'', meaning that the request must be served by the receiver, or ``load-balance'', in which case the router is free to redirect it to another server.
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[t]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{load_balancer_interaction_tcp.pdf}
+        \caption{TCP}
+    \end{subfigure}%
+    ~
+    \begin{subfigure}[t]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{load_balancer_interaction_r2p2.pdf}
+        \caption{\gls{r2p2}}
+    \end{subfigure}
+    \caption{
+        Load balancing data flow using both TCP and \gls{r2p2}.
+        We can see that the connection-less nature of \gls{r2p2} allows data to be sent directly back to the client.
+        \label{fig:load_balancing}
+    }
+\end{figure}
+
+
 We realized that it could be interesting to embed the replication mechanism in the transport layer.
-That way, a request could be marked as ``Replicated'', and then the server receiving it would automatically replicate it to other machines.
-Once the request is marked as ``committed'' by the consensus protocol, the request will be forwarded to the application layer.
-This means every node in the cluster would eventually see this request, and that all nodes would see the same order.
-
-Bringing the consensus protocol to the transport layer greatly simplifies the life of the application developper.
+This would greatly simplify the life of the application developer.
 Any networked application can be turned into a replicated version of it simply by changing a flag on the requests.
 Clients could even choose wether or not to ask for replication based on application-specific logic.
 For example, if stales read from a key-value store are acceptable, read request could be marked as ``load-balanced'', while write requests would be marked as ``replicated'' to ensure consistency.
+
 
 \subsection{R2P2 API}
 

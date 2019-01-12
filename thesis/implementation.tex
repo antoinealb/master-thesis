@@ -1,44 +1,6 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-Something about libuv and how it is very convenient to prototype async stuff
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{client_server_interaction}
-    \caption{Typical client server interaction for a replicated service call.
-        1. The request is sent from the client to the leader.
-        2. The leader replicates the request to all followers.
-        3. The followers acknowledge the replication.
-        4. Once the request is replicated on a majority of servers the leader commits it.
-        5. The commited request is sent to the application (on every node) and then the reply is sent back to the client.
-    \label{fig:client-server-interaction}
-    }
-\end{figure}
-
-\section{Choice of a consensus protocol}
-
-One of the earliest solution to the consensus problem is Lamport's Paxos algorithm\cite{paxos}.
-It is currently widely used, for example Google relies on it a lot to ensure correctness of its distributed systems\cite{chubby, paxoslive}.
-However, Paxos has two issues: first, it only solves part of the problem; some other ``bricks'' must be added to it to form a complete system.
-In addition to this, Paxos is known to be hard to understand, and even more to implement correctly.
-Most of its user rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
-This means modifying the consensus protocol for our application and chosent transport could be hard to do
-
-Fortunately for us, a simpler alternative to Paxos called Raft was recently introduce\cite{raft}.
-Raft was designed from the ground up to be simpler by cleanly separating the different parts of the problem.
-It also provides a complete solution, unlike Paxos which often requires additional, unproven extension\cite{paxoslive}.
-
-Another possible choice would have been ZooKeeper's ZAB\cite{zookeeper}, but was not as well documented as Raft.
-In addition, it appeared to provide primitives that were less general purposes than a replicated log.
-
-Despite the availability of excellent production grade Raft implementations, we decided to implement our own.
-Most existing Raft implementations are using high level languages such as Go, which are not suited for low latency programming.
-Other implementations in C or C++ make a lot of hypothesis on the underlying platform.
-For all those reasons, it was deemed easier to do it ourself, using experience gathered by doing a prototype in Python.
-The resulting implementation is pretty small, at about 1000 lines of C++ code.
-
 \section{Implementation language}
 
 We initially planned to write the Raft prototype in Rust, using the NetBricks\cite{netbricks} framework.
@@ -57,7 +19,9 @@ This means that the Rust / NetBricks code would have been difficult to integrate
 Due to all those factors, we decided to switch the implementation strategy to directly writing code that could be used in C.
 We use C++14, which is a lot more expressive than pure C.
 Move semantics are also available in this language since C++11.
-While not as useful as Rust's, mostly due to the lack of safety guarantees, they still form a very useful tool to reduce packet copying.
+While not as useful as Rust's, mostly due to the lack of safety guarantees, they still form a very useful tool to reduce packet copying while simplifying memory management.
+
+% TODO: Point to the fact that this could really be written in Rust, but maybe not using NetBricks (Ixy ?)
 
 \section{Message serialization}
 
@@ -71,7 +35,7 @@ While not as useful as Rust's, mostly due to the lack of safety guarantees, they
 
 \section{Message Routing}
 
-In Raft, only the leader can send new mesasges.
+In Raft, only the leader can process new client requests.
 This keeps the protocol simpler by only having data flowing from the leader to the followers.
 On the other hand, it means that we must also have a way to direct client queries to the leader.
 
@@ -86,16 +50,27 @@ For our benchmarking we manually pointed the benchmark client to the elected lea
 
 \section{Log}
 
-RAM based
+At the end, Raft can only replicate a log, and ensure that all the nodes will eventually have all entries, in the same order.
+We must provide an adequate definition of the log entries for our needs.
+Since we are using Raft to replicate \gls{rpc} requests, the log entries will contain a \gls{r2p2} request: A source address and port, a request ID, and the request data.
 
-Each element is one request
+To keep things simple and low latency, our log implementation stores its data in RAM only.
+The requests are kept in a circular buffers, so that the oldest entry gets replaced by the newest one.
+The data is stored into the circular buffer without copying; when an entry is overwritten, its data is given back to the network stack.
 
-\section{DPDK}
+\section{DPDK backend}
 
-\section{Userland implementation}
+In order to provide the best performance, \gls{r2p2} implements kernel bypass technologies.
+In this mode, the application talks directly to a dedicated \gls{nic}, embedding the driver in the library code.
+
+For the implementation we opted to use Intel's DPDK framework.
+Several other kernel bypass framework exist such as netmap\cite{netmap}, or Ixy\cite{ixy}.
+However they do not appear to have the same industrial traction as DPDK, neither are they cross platform; DPDK can run on Linux and FreeBSD on both Intel and ARM processors.
+
+\section{Userland backend}
 
 While kernel bypass offers the best performance, it is not always possible to use it (i.e. when using a \gls{nic} is shared between applications).
-Our current implementation can therefore either be compiled to use DPDK (and a custom UDP/IP stack) or to use the kernel networking facilities.
+Our current implementation can therefore either be compiled to use DPDK (and a custom UDP/IP stack) or to use the normal kernel networking facilities.
 In this second case, only \gls{r2p2} is implemented in the application; the rest runs in-kernel.
 
 To achieve high performance and stay close to DPDK's event based model, we use asynchronous I/O facilities.
@@ -104,3 +79,16 @@ We rewrote it to use libuv instead, which abstracts the different asynchronous I
 
 This means that the current implementation can run as a normal networked component on all major platforms.
 This allows for a much easier development experience than running DPDK directly, and can even be used in production with good performance.
+
+\section{Timers}
+
+The Raft algorithm relies a lot on timers to detect leader absence and organize elections.
+In order to implement this, we simply use the functions provided by both Intel's DPDK and libuv.
+The port layer must only periodically call a function (\texttt{raft\_tick}).
+This call is then used to process timeouts in various parts of the Raft implementation.
+
+\section{Modification to client libraries}
+
+The modification to client libraries are most of the time trivial.
+Usually it is just setting the \gls{r2p2} routing policy to replicated.
+The rest is then transparently handled by the server.
