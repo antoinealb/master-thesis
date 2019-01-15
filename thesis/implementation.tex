@@ -80,7 +80,7 @@ However they do not appear to have the same industrial traction as DPDK, neither
 
 \section{Userland backend}
 
-While kernel bypass offers the best performance, it is not always possible to use it (i.e. when using a \gls{nic} is shared between applications).
+While kernel bypass offers the best performance, it is not always possible to use it (\ie when using a \gls{nic} is shared between applications).
 Our current implementation can therefore either be compiled to use DPDK (and a custom UDP/IP stack) or to use the normal kernel networking facilities.
 In this second case, only \gls{r2p2} is implemented in the application; the rest runs in-kernel.
 

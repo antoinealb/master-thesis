@@ -34,7 +34,7 @@ Dealing with those types of failure (especially malicious nodes) require a diffe
 Raft\cite{raft} is a protocol that proposes a solution to the distributed consensus problem.
 Its main goal is to be easy to understand while still being efficient.
 It achieves its objective by cleanly separating different concerns of the protocol.
-It also provides a strong leader, i.e. all entries flow from the leader to the followers, making it simpler to reason about.
+It also provides a strong leader, \ie all entries flow from the leader to the followers, making it simpler to reason about.
 Unlike the original Paxos, Raft provides a complete solution to build a replicated log.
 
 
@@ -219,7 +219,7 @@ Instead it is \emph{event oriented}: the user of the library provides a set of c
 Those callbacks also receive a per-connection argument which can be used to track state.
 The core of the \gls{r2p2} \gls{api} can be seen in Listing~\ref{listing:r2p2-client-api} and \ref{listing:r2p2-server-api}.
 
-Such event-oriented \gls{api} maps well to the semantics of either high performance I/O syscalls (e.g. Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
+Such event-oriented \gls{api} maps well to the semantics of either high performance I/O syscalls (\eg Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
 
 \begin{lstfloat}
 \lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} \gls{api} summary}]{code_snippets/r2p2_client_api.c}
@@ -253,7 +253,7 @@ The first would be to move moving more parts of the system in the kernel, while 
 The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
 This technique is very efficient in terms of developper efforts; by using the kernel-provided facilities, engineers gain access to a high-quality implementation shared by many users.
 However, moving application-specific code in kernel space is not an easy task.
-This is due to the usual challenges of kernel development: very little memory protection, lack of debugging tools, possibility to crash the development machine if testing on it, etc.
+This is due to the usual challenges of kernel development: very little memory protection, lack of debugging tools, possibility to crash the development machine if testing on it, \etc
 The lack of memory protection for kernel code also opens the door to security vulnerabilities, which can be pretty severe when processing network traffic.
 While modern operating systems offer security features to mitigate this risk\cite{kernel_self_protection}, writing correct kernel code is still a difficult exercise.
 This is made even more difficult by the fact that Linux's internal \gls{api} are considered unstable by developpers.
