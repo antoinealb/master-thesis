@@ -51,9 +51,13 @@ key themes:
 - Transport Protocols
 - Kernel Bypass
 - Consensus
+- Performance
 
 * kernel bypass for fast replicated RPC
 * Replicating Remote Procedure Calls at the Transport Layer
 * Bringing Distributed Consensus to the Transport Layer
 * Fast, Replicated Remote Procedure Calls
 * Adding some consensus in your transport protocol
+* Fast, Replicated RPCs using Kernel Bypass
+* Getting there, faster: Distributed Consensus and Kernel Bypassing
+* REPLICATED_ROUTE: Distributed Consensus at the Transport Layer

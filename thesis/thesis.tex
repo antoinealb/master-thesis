@@ -1,5 +1,6 @@
 \documentclass[a4paper, 12pt, singlepage]{book}
 
+\usepackage[html]{xcolor}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[acronym]{glossaries}
@@ -7,7 +8,7 @@
 \usepackage{booktabs}
 \usepackage{pdfpages}
 \usepackage{hyperref}
-\usepackage{listings}
+\usepackage{microtype}
 \usepackage{tablefootnote}
 \usepackage{geometry}
 \usepackage{verbatim}
@@ -21,6 +22,9 @@
 \usepackage[inline]{enumitem}
 \usepackage[numbers]{natbib}
 
+\usepackage{listings}
+\usepackage{listings-theme}
+
 \graphicspath{{figures/}}
 
 \title{Kernel Bypass for fast replicated RPCs }
@@ -30,6 +34,10 @@
 \newenvironment{dedication}
      {\vspace{6ex}\begin{quotation}\begin{center}\begin{em}}
      {\par\end{em}\end{center}\end{quotation}}
+
+\newcommand{\eg}{\textit{e.g.,}\xspace}
+\newcommand{\ie}{\textit{i.e.,}\xspace}
+\newcommand{\etc}{\textit{etc.}\xspace}
 
 \newacronym{r2p2}{R2P2}{Request Response Pair Protocol}
 \newacronym{nic}{NIC}{Network Interface Card}
@@ -41,6 +49,7 @@
 \newacronym{tcp}{TCP}{Transmission Control Protocol}
 \newacronym{udp}{UDP}{User Datagram Protocol}
 \newacronym{slo}{SLO}{Service Level Objective}
+\newacronym{irq}{IRQ}{interrupt}
 
 \lstset{language=C++,frame=single}
 

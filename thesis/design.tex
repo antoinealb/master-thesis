@@ -7,7 +7,7 @@ One of the earliest solution to the consensus problem is Lamport's Paxos algorit
 It is currently widely used, for example Google relies on it a lot to ensure correctness of its distributed systems\cite{chubby, paxoslive}.
 However, Paxos has two issues: first, it only solves part of the problem; some other ``bricks'' must be added to it to form a complete system.
 In addition to this, Paxos is known to be hard to understand, and even more to implement correctly.
-Most of its user rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
+Most of its users rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
 This means modifying the consensus protocol for our application and chosent transport could be hard to do
 
 Fortunately for us, a simpler alternative to Paxos called Raft was recently introduce\cite{raft}.

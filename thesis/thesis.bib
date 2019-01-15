@@ -15,12 +15,10 @@
     organization = {IEEE}
 }
 
-@inproceedings{r2p2,
+@misc{r2p2,
     title={{Tail-Latency-Tolerant Load Balancing of Microsecond-scale RPCs}},
     author={Kogias, Marios and Bugnion, Edouard},
     year={2019},
-    organization={USENIX Association},
-    booktitle={Proceedings of the 16th symposium on Networked Systems design and implementation},
     notes={Unpublished at time of writing},
 }
 
@@ -38,7 +36,6 @@
     institution={EPFL},
     year={2018},
 }
-
 @inproceedings{paxoslive,
     title={Paxos made live: an engineering perspective},
     author={Chandra, Tushar D and Griesemer, Robert and Redstone, Joshua},
@@ -69,7 +66,7 @@
 
 @inproceedings{zookeeper,
     title={ZooKeeper: Wait-free Coordination for Internet-scale Systems.},
-    author={Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio Paiva and Reed, Benjamin},
+    author={Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio and Reed, Benjamin},
     booktitle={USENIX annual technical conference},
     volume={8},
     number={9},
@@ -149,9 +146,39 @@
   publisher={Springer}
 }
 
-@article{paxos_classic_fast,
+@inproceedings{paxos_classic_fast,
   title={Classic paxos vs. fast paxos: caveat emptor},
   author={Junqueira, Flavio and Mao, Yanhua and Marzullo, Keith},
-  journal={Proceedings of USENIX Hot Topics in System Dependability (HotDep)},
-  year={2007}
+  booktitle={Proceedings of USENIX Hot Topics in System Dependability},
+  year={2007},
+  organization = {USENIX}
 }
+
+@article{paxos_made_simple,
+  title={Paxos made simple},
+  author={Lamport, Leslie and others},
+  journal={ACM Sigact News},
+  volume={32},
+  number={4},
+  pages={18--25},
+  year={2001}
+}
+
+@misc{measuring_context_switch,
+    howpublished = {\url{https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/}},
+    title = {Measuring context switching and memory overheads for Linux threads},
+    year = {2018},
+    author = {Bendersky, Eli}
+}
+
+
+@misc{kernel_self_protection,
+    howpublished = {\url{https://www.kernel.org/doc/html/v4.18/security/self-protection.html}},
+    title = {Kernel Self-Protection},
+    year = {2018},
+    author = {{The kernel development community}},
+    notes = {Consulted on January 13th, 2019.}
+}
+
+
+

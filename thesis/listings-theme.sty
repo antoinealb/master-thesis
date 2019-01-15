@@ -1,0 +1,34 @@
+\usepackage{listings}
+
+
+\definecolor{almostwhite}{HTML}{ffffff}
+\definecolor{black}{HTML}{1d1f21}
+\definecolor{purple}{HTML}{b294bb}
+\definecolor{gray}{HTML}{969896}
+\definecolor{green}{HTML}{699D36}
+\definecolor{orange}{HTML}{de935f}
+\definecolor{blue}{HTML}{2aa198}
+
+\lstset{
+    % How/what to match
+    sensitive=true,
+    % Border (above and below)
+    frame=lines,
+    % Extra margin on line (align with paragraph)
+    xleftmargin=\parindent,
+    % Put extra space under caption
+    belowcaptionskip=1\baselineskip,
+    % Colors
+    backgroundcolor=\color{almostwhite},
+    basicstyle=\color{black}\ttfamily,
+    keywordstyle=\color{purple}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{green},
+    numberstyle=\color{blue},
+    identifierstyle=\color{black},
+    % Break long lines into multiple lines?
+    breaklines=true,
+    % Show a character for spaces?
+    showstringspaces=false,
+    tabsize=2
+}

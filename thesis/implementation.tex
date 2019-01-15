@@ -34,6 +34,7 @@ While not as useful as Rust's, mostly due to the lack of safety guarantees, they
 
 
 \section{Message Routing}
+\label{sec:message_routing}
 
 In Raft, only the leader can process new client requests.
 This keeps the protocol simpler by only having data flowing from the leader to the followers.
@@ -44,9 +45,19 @@ However, this is not optimal from a tail latency perspective: a client that pick
 
 Fortunately, \gls{r2p2} was implemented with load balancing semantics in mind.
 We can therefore extend the \gls{r2p2} load balancer to always propagate replicated requests to the current leader.
-While this haven't been done yet, it could be implementing by having the load balancer listening to Raft heartbeat messages.
+While this haven't been done yet, it could be implementing by having the load balancer listening to Raft heartbeat messages (Figure~\ref{fig:r2p2_raft_routing}).
 
 For our benchmarking we manually pointed the benchmark client to the elected leader.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{r2p2_raft_routing}
+    \caption{Message routing with R2P2 and Raft.
+        The programmable switch listens to Raft leader heartbeats and forwards requests to the leader with the highest term.
+    \label{fig:r2p2_raft_routing}
+    }
+\end{figure}
 
 \section{Log}
 

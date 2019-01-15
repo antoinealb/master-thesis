@@ -90,3 +90,7 @@ On the throughput side, Kernel Paxos claims \SI{19}{\kilo msg\per\second}, where
 According to Kernel Paxos authors, their throughput is bound by CPU performance on the proposers.
 We were not able to verify this claim, as we were not able to run their implementation in our cluster.
 As they did not publish the model of their CPU for their \SI{10}{\giga\bit\per\second} experiments, a direct comparison is hard to do.
+
+In terms of implementation complexity, Kernel Paxos is about 8800 lines of code.
+Our implementation is about half this size at 4300 lines.
+In order to keep the comparison meaningful, the userland UDP/IP stack is not accounted in those lines.
