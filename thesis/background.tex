@@ -164,7 +164,7 @@ In addition to this, TCP connection tracking requires requires a lot of messages
 % connection handshake: maybe a tcp connection establishment diagram ?
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.4\textwidth]{tcp_lifecycle}
     \caption{Lifecycle of a typical \gls{rpc} over TCP (such as HTTP) interaction.
@@ -186,7 +186,7 @@ Since it was designed with load balancing, each \gls{r2p2} request includes incl
 For example, it can be marked as ``Fixed'', meaning that the request must be served by the receiver, or ``load-balanced'', in which case the router is free to redirect it to another server.
 Since \gls{r2p2} has no notion of connections, the reply can be sent directly to the client instead of having an additional trip through the load balancer (Figure~\ref{fig:load_balancing}).
 
-\begin{figure}[h!]
+\begin{figure}
     \centering
     \begin{subfigure}[t]{0.4\textwidth}
         \includegraphics[width=\textwidth]{load_balancer_interaction_tcp.pdf}
