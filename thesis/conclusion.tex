@@ -31,11 +31,9 @@ However, Raft is hard to implement correctly, despite being designed for ease of
 
 Jepsen\cite{jepsen} is an automated tool for checking of consistency properties in distributed systems.
 It works by randomly applying partitions, delays and packet reordering to distributed applications.
-So far it sucessfuly analyzed big open source project such as MongoDB, etcd, or Redis.
+So far it sucessfuly analyzed and found issues in major projects such as MongoDB, etcd, or Redis.
 We think we would gain a lot of confidence in the soundness of our implementation if a Jepsen testbench was available for it.
 It could be written using \gls{r2p2} as its only interface, so that the same test suite could be shared between many different \gls{r2p2} implementations.
-
-% TODO: Cite Jepsen analyses
 
 \section{Cluster membership change}
 
@@ -51,7 +49,7 @@ A catch-up phase is also needed, in which new cluster members are downloading en
 
 This was kept out of this work because it was not needed to prove that moving the replication in the transport was required.
 However, it would be a very interesting extension from an operational point of view.
-All the required details can be found in Section~6 of the Raft paper\cite{raft}.
+All the required details can be found in Section~6 of the Raft paper\cite[p.~10]{raft}.
 
 
 \section{Replicated request routing}
@@ -60,7 +58,21 @@ As mentionned in Section~\ref{sec:message_routing}, messages under Raft must go 
 A solution would be to have a smart switch listen to Raft leader heartbeats to decide who should receive messages tagged with \texttt{REPLICATED\_ROUTE}.
 Since a \gls{r2p2} load balancer is already implemented in the P4 programming language\cite{r2p2}, the Raft-related functionality could be added to it with excellent performance.
 
-% TODO: A section on alternatives to Raft such as Speculative Paxos ?
+
+\section{Faster consensus protocol}
+
+Our current consensus implementation is very generic: it makes no particular assumptions about the properties of the underlying network.
+This is good for Internet routing or public clouds, where we control very little about the network fabric.
+It also means we get consensus on 2 \glspl{rtt}.
+
+However, in typical datacenter deployements, we can modify the network to support the applications.
+Things like \gls{qos}, VLANs and multicast group offer new functionalities that the applications can rely on.
+Using this mechanism, Ports \etal used a single network switch as a serialization point for all multicast traffic.
+They were able to design a consensus protocol that reaches consensus in one \gls{rtt} in 99.9\% of requests called \emph{Speculative Paxos}\cite{specpaxos}.
+
+One downside of this approach is that some transactions sometimes need to be rolled back.
+This would require exposing a more complicated \gls{api} to the application layer.
+However, this would be doable to reach ultra low latency consensus.
 
 \chapter{Conclusion}
 

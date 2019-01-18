@@ -121,6 +121,7 @@ Finally, the node sends a reply to the candidate containing the status of its vo
 If a candidate reaches majority, then it transitions to the leader role and starts sending heartbeats.
 Otherwise, the election timeout will fire again, restarting the process at a new term.
 To avoid conflicting elections where no majority can occur, the timeout duration is randomized, so that election will eventually succeed.
+This procedure is summarized in Figure~\ref{fig:raft-leader-election}.
 
 
 \begin{figure}[h]
@@ -234,7 +235,7 @@ We hope that this will create a re-usable framework and that more developper wil
 
 \section{Kernel Bypass}
 
-Due to the way time sharing operating system work, switching between userland and kernel code, or between two userland tasks is expensive (about \SIrange{1}{2}{\micro\second}\cite{measuring_context_switch})..
+Due to the way time sharing operating system work, switching between userland and kernel code, or between two userland tasks is expensive: about \SIrange{1}{2}{\micro\second}\cite{measuring_context_switch}).
 This is due to the need of saving the whole original execution context first, and then loading or restoring the new execution context.
 Since every system call switches to kernel code, high performance code can be severly limited by the amount of syscall it is doing.
 For example, assume that a simple packet forwarding application running on Linux uses one syscall to read a packet, and another syscall to write it again.
@@ -246,7 +247,7 @@ They allow the processor to avoid checking the presence of processing tasks need
 However, they are also quite slow to be processed, increasing latency.
 In high packet rate applications, a processor can safely assume that a packet will always be available, or just check again if this is not the case.
 The loss in energy or power is quite low, and the gain in throughput and latency significant.
-By removing context switches and interrupts, Google observed a 3x gain in throughput\cite{maglev}.
+By removing context switches and interrupts, Google observed a 3x gain in throughput in their load balancers\cite{maglev}.
 
 To reduce the number of switches between kernel space and userland, we have two choices.
 The first would be to move moving more parts of the system in the kernel, while the second moves more parts of the system to userland.

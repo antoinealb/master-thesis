@@ -56,7 +56,7 @@ The different types of Raft messages are differentiated in the payload of the me
         Request is then replicated to all followers (2).
         Followers acknowledge the replication (3).
         Leader marks the request committed (4).
-        Commited requests are forwarded to the application and replies are sent to the client (5).
+        Commited requests are forwarded to the application and reply is sent to the client (5).
     \label{fig:client-server-interaction}
     }
 \end{figure}
@@ -70,8 +70,4 @@ From this point on, the request will not be lost by the cluster\footnote{Provide
 Therefore, the request is forwarded to the application and the reply sent to the client (5).
 On next message, or on timeout, the new commit index will also be sent to followers (4).
 At this point they also forward it to their local copy of the application, which also sends back answers(5).
-
-Having the followers send back a reply to the client ensures that the reply is sent in case of leader crash.
-However, it will greatly increase the load on the network, which might be an issue.
-One possible fix for this would be to have the followers run the request locally but drop the reply.
-
+The replies sent from non-leader are silently dropped, as they would arrive after the leader's reply.

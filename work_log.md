@@ -271,3 +271,36 @@ key performance data:
 
 max throughput on small messages: 8k agreements / second on a single client.
     Reaching 100k agreements / second with one node.
+
+# Late week (january 14 - January 20)
+
+To run lancet:
+
+``
+#!/bin/sh
+
+LEADER="10.90.44.220"
+PORT=8000
+
+./coordinator/coordinator \
+	--targetHost 10.90.44.220:8000 \
+	--loadAgents icnals14 -loadBinary agents/t_rpclib_agent --loadThreads 8 --loadConn 128 \
+   	--ltAgents icnals10 --ltThreads 8 --ltConn 32 --latBinary agents/l_rpclib_agent --lqps 4000 \
+	--iadist exp \
+	--proto synthetic:fixed:10 \
+	--loadPattern step:10000:5000 \
+	--duration 35
+```
+
+Max load = load_start + (duration / 5) * load_step
+
+In the above example, max load = 45000 RPS
+
+servers i can use & there allocations
+
+* 10 lacent coordinator
+* 14 lacent agent
+* 15 raft
+* 16 cant login
+* 18 raft
+* 20 raft
