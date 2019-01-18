@@ -38,7 +38,8 @@ def main():
     plt.ylim(0, 200)
     plt.grid()
 
-    plt.legend(args.legend)
+    if args.legend:
+        plt.legend(args.legend)
 
     if args.output:
         plt.savefig(args.output)
