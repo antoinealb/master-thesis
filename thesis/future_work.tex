@@ -1,0 +1,76 @@
+\chapter{Future work}
+
+\section{Disk backed persistency}
+
+The current implementation only stores requests in memory.
+This means that requests are not truly persistent: if all nodes were to come offline, committed data would be lost.
+To avoid this, the replicated log would need to be persisted to non volatile storage.
+
+However our application cannot use the standard Linux filesystem \gls{api}.due to the latency of syscalls.
+Recently new technologies have emerged to use persistent storage (particularly \glspl{ssd}) without relying on the kernel.
+One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techniques and presents an \gls{api} similar to DPDK.
+Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO.
+This works by submitting filesystem operations in a ring buffer, which will get collected and executed by the kernel later.
+
+% TODO: Mention that Kernel Paxos does not do disk backed persistency
+% TODO: Maybe prototype it using libuv?
+
+\section{Max-latency batching}
+
+% TODO: Redo this part
+
+Random idea: Currently requests are either immediately replicated to the log or we wait for a configurable timeout to expire, then send a batch of request.
+This could lead to bad behaviour in heavily loaded servers (many small appendrequests) or create timeouts that are too important for the application.
+Maybe a smart batching policy is possible and should be designed in the protocol.
+
+\section{Consistency verification of the protocol}
+
+The current implementation of the protocol has been mostly tested using hand-written unit and integration tests.
+However, Raft is hard to implement correctly, despite being designed for ease of comprehension.
+
+
+Jepsen\cite{jepsen} is an automated tool for checking of consistency properties in distributed systems.
+It works by randomly applying partitions, delays and packet reordering to distributed applications.
+So far it sucessfuly analyzed and found issues in major projects such as MongoDB, etcd, or Redis.
+We think we would gain a lot of confidence in the soundness of our implementation if a Jepsen testbench was available for it.
+It could be written using \gls{r2p2} as its only interface, so that the same test suite could be shared between many different \gls{r2p2} implementations.
+
+\section{Cluster membership change}
+
+An important limitation of the current implementation is that it cannot change the cluster size without restarting the application.
+This is an important restriction, as it prevents scaling the system or replacing failing nodes.
+The Raft paper\cite{raft} proposes a way to deal with the addition or removal of replicas.
+
+The main challenge comes from not wanting to have two leaders at any given point in time.
+This could happen if the quorum size changes, and not all nodes receive this information.
+Then two differente leaders could lead to two different values being accepted, without a way to reconciliate those.
+In order to avoid this, a new mechanism is introduced called \emph{join consensus}, where all majority agreements (entry commit and leader election) must be reached both in the old and new quorums.
+A catch-up phase is also needed, in which new cluster members are downloading entries from the leader and do not take part in the vote process.
+
+This was kept out of this work because it was not needed to prove that moving the replication in the transport was required.
+However, it would be a very interesting extension from an operational point of view.
+All the required details can be found in Section~6 of the Raft paper\cite[p.~10]{raft}.
+
+
+\section{Replicated request routing}
+
+As mentionned in Section~\ref{sec:message_routing}, messages under Raft must go through the leader, but clients do not know who the leader is.
+A solution would be to have a smart switch listen to Raft leader heartbeats to decide who should receive messages tagged with \texttt{REPLICATED\_ROUTE}.
+Since a \gls{r2p2} load balancer is already implemented in the P4 programming language\cite{r2p2}, the Raft-related functionality could be added to it with excellent performance.
+
+
+\section{Faster consensus protocol}
+
+Our current consensus implementation is very generic: it makes no particular assumptions about the properties of the underlying network.
+This is good for Internet routing or public clouds, where we control very little about the network fabric.
+It also means we get consensus on 2 \glspl{rtt}.
+
+However, in typical datacenter deployements, we can modify the network to support the applications.
+Things like \gls{qos}, VLANs and multicast group offer new functionalities that the applications can rely on.
+Using this mechanism, Ports \etal used a single network switch as a serialization point for all multicast traffic.
+They were able to design a consensus protocol that reaches consensus in one \gls{rtt} in 99.9\% of requests called \emph{Speculative Paxos}\cite{specpaxos}.
+
+One downside of this approach is that some transactions sometimes need to be rolled back.
+This would require exposing a more complicated \gls{api} to the application layer.
+However, this would be doable to reach ultra low latency consensus.
+
