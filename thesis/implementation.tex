@@ -1,41 +1,37 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
+\section{Architecture}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{system_layers}
+    \caption{View of the different layers in the system architecture.
+    \label{fig:architecture}
+    }
+\end{figure}
+
+The global architecture of our system can be seen on Figure~\ref{fig:architecture}.
+At the top sits the application logic, which can be any general networked application: HTTP server, database, cache, \etc
+The implementation presented in this report can accomodate any of those.
+
+The application layer uses services provided by the \gls{r2p2} library.
+The main role of this library is to assemble complete \gls{rpc} messages from \gls{udp} datagrams.
+It also handles the logic of replying to a given request, as well as some acknowledgements required for load balancing.
+This layer also provides networked I/O to the Raft implementation.
+
+The \gls{r2p2} layer will in turn make calls into DPDK and Linux for various functionalities.
+We must emphasize that all the ``hot path'' operations are done through DPDK, as calling into Linux is too slow for our purposes.
+Not shown here is also a small \gls{udp}/IP stack, with support for auxiliary features like the \gls{arp}.
+
+
 \section{Implementation language}
 
-We initially planned to write the Raft prototype in Rust, using the NetBricks\cite{netbricks} framework.
-The goal was to use Rust high level constructs to have compile time safety guarantees while maintaining good performance.
-However, it turned out that using Rust for this project was less than ideal for several reasons.
-
-NetBricks\cite{netbricks} is a Rust framework that provides everything needed to write high performance network applications in Rust.  % TODO: Something about Ogier writing R2P2 to rust
-It provides a full userland networking stack, from the DPDK bindings up to UDP socket implementation.
-Thanks to Rust's move semantics, NetBricks is capable of achieving zero copy processing of incoming packets, leading to very high performance.
-Unfortunately, it does not appear to be developped actively anymore, which is an issue due to the fast evolving nature of the language.
-The R2P2 Rust implementation\cite{ogier} written by another Master student appears to be incomplete at the moment.
-
-Another issue with Rust was that the current ``reference'' implementation of R2P2 is written in C using a custom userland UDP/IP stack.
-This means that the Rust / NetBricks code would have been difficult to integrate in the existing codebase, maybe even requiring a C rewrite.
-
-Due to all those factors, we decided to switch the implementation strategy to directly writing code that could be used in C.
-We use C++14, which is a lot more expressive than pure C.
-Move semantics are also available in this language since C++11.
+As the reference implementation of \gls{r2p2} was written in C, we wanted to use a language that could be easily integrated with the existing codebase.
+We decided to use C++ for the gain in expressiveness compared to pure C.
+In particular, templates allow code to be easily written in a generic fashion.
+Move semantics are also available in this language since C++11, and allow us to avoid a lot of packet copying while simplifying memory management.
 While not as useful as Rust's, mostly due to the lack of safety guarantees, they still form a very useful tool to reduce packet copying while simplifying memory management.
-
-% TODO: Point to the fact that this could really be written in Rust, but maybe not using NetBricks (Ixy ?)
-
-% \section{Message serialization}
-% 
-% % TODO: is it really interesting ?
-% 
-% \begin{itemize}
-%     \item Custom code vs Protobuf
-% \end{itemize}
-% 
-% \input{messages/vote_request}
-% \input{messages/vote_reply}
-% \input{messages/append_entries_request}
-
-
 
 \section{Message Routing}
 \label{sec:message_routing}
@@ -53,8 +49,7 @@ While this haven't been done yet, it could be implementing by having the load ba
 
 For our benchmarking we manually pointed the benchmark client to the elected leader.
 
-
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{r2p2_raft_routing}
     \caption{Message routing with R2P2 and Raft.
@@ -72,6 +67,22 @@ Since we are using Raft to replicate \gls{rpc} requests, the log entries will co
 To keep things simple and low latency, our log implementation stores its data in RAM only.
 The requests are kept in a circular buffers, so that the oldest entry gets replaced by the newest one.
 The data is stored into the circular buffer without copying; when an entry is overwritten, its data is given back to the network stack.
+
+\section{Worker threads}
+
+During evaluation of the original design, we discovered that executing the workloads in the main thread created a lot of queueing (Section~\ref{sec:latency_throughput}).
+Because of this, we decided to move the processing of the workloads off the main networking thread and into auxiliary workers.
+Data between the two is passed through queues.
+
+However, simply using threadsafe queues would not have been enough.
+The overhead from mutexes can be quite important, reducing total throughput.
+The chosen approach is to use lockless queues, in which one reader thread can access the tail pointer, and one writer thread can access the head pointer.
+Since the pointers are not written by both threads and can only move in one direction (head cannot move back), it is safe to share the data structure without synchronization.
+We used an existing high performance implementation\cite{fast_queue}, as writing such data structures is error-prone and out of the scope of this thesis.
+
+One downside of the current approach is that requests in the leader node are still executed by the main/network thread.
+This was done to avoid copying reponse data from one thread to another.
+However, it could cause some issues when a node transitions from follower to leader, if the application code is not thread safe.
 
 \section{DPDK backend}
 
@@ -104,6 +115,20 @@ This call is then used to process timeouts in various parts of the Raft implemen
 
 \section{Modification to client libraries}
 
-The modification to client libraries are most of the time trivial.
-Usually it is just setting the \gls{r2p2} routing policy to replicated.
-The rest is then transparently handled by the server.
+On the client side, the code requires very little modifications to work with replicated request.
+One should just add the new routing policy definition.
+Nothing else is changed, and the client will still send and receive only one request response pair.
+
+
+\section{Implementation complexity}
+
+Our code can be divided in two big parts.
+The first one is the Raft logic implementation, which does not do any I/O, timer management, \etc
+It is about a thousand line of C++ code, which uses a lot templates and the standard library collections.
+In addition comes about 1500 lines of unit testing, very useful to check the soundness of our Raft code.
+
+The second part is the part specific to \gls{r2p2}, which implements custom log entries for \gls{r2p2} requests.
+This amounts to 250 lines of C++.
+
+Finally we have a few changes to the core code in C, but they stay quite small.
+It mostly consists of routing requests tagged with \texttt{REPLICATED\_ROUTE} to the Raft code.

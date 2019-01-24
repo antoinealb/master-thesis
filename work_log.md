@@ -304,3 +304,30 @@ servers i can use & there allocations
 * 16 cant login
 * 18 raft
 * 20 raft
+
+Big issue I am currently facing: there is a lot of queueing with a 10 uS synthetic load.
+This means we need a bigger log to keep everything in the queue.
+However, we do a lot of linear search in the log, hence making the log 100x larger means that latency gets very ugly, very quickly.
+This means that 99th percentile latency goes from 30 uS to > 200 uS when going from a log of 10 entries to a 1000 entries..
+
+We need to do better, most likely using binary search in the log.
+This should not be too hard.
+To the micro benchmarks!
+
+Replacing a few key algorithms with binary search helped a lot -> now we can scale like mad
+
+
+commit 94808d1c60eb46a3208bcf196590cedd610c8f02 (HEAD -> refs/heads/antoinealb)
+Author: Antoine Albertelli <antoine@antoinealb.net>
+Date:   Mon Jan 21 19:21:38 2019 +0100
+
+    Do not execute workloads on replicas
+
+    When running the synthetic workload with a 10 us service time, we
+    realised that this would create a lot of queueing and the througput
+    would drop.
+
+    We observed that replying right away on the replica was the way to fix
+    this. In a real life system of course, committed entries would have to
+    be executed in the replicas as well, but they could be offloaded to a
+    separate worker thread, and only catch up in case of leader change.

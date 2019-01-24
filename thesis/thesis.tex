@@ -34,8 +34,13 @@
 \date{January 25, 2019}
 
 \newenvironment{dedication}
-     {\vspace{6ex}\begin{quotation}\begin{center}\begin{em}}
-     {\par\end{em}\end{center}\end{quotation}}
+     {\cleardoublepage\null\vfill\begin{quotation}\begin{center}\begin{em}}
+     {\end{em}\end{center}\end{quotation}\vfill\null}
+
+\newenvironment{abstract}%
+    {\cleardoublepage\thispagestyle{empty}\null\vfill\begin{center}%
+    \bfseries{}Abstract\end{center}}%
+    {\vfill\null}
 
 \newcommand{\eg}{\textit{e.g.,}\xspace}
 \newcommand{\ie}{\textit{i.e.,}\xspace}
@@ -54,6 +59,7 @@
 \newacronym{slo}{SLO}{Service Level Objective}
 \newacronym{irq}{IRQ}{interrupt}
 \newacronym{qos}{QoS}{Quality of Service}
+\newacronym{arp}{ARP}{Address Resolution Protocol}
 
 \lstset{language=C++,frame=single}
 
@@ -69,6 +75,9 @@
 \frontmatter
 
 \include{titlepage}
+\input{abstract}
+\input{dedication}
+
 
 \tableofcontents
 

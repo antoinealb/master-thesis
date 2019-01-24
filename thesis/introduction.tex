@@ -19,10 +19,20 @@ From this observation, we decided to implement the consensus protocol at the tra
 This means each application gets the possibility to become distributed ``for free''.
 We implemented this as part of our \gls{rpc} oriented transport, which runs on top of UDP.
 
-% TODO: enumerate contributions (raft as part of transport)
+Our implementation is based on the \gls{r2p2}, a novel transport layer developped at the \gls{dcsl}.
+This protocol was created specially with the goal of handling traffic inside datacenters.
+It embeds load balancing inside the protocol, providing different routing policies optimized for different load balancing methods.
+We added a new method called ``replicated route'', in which all nodes are guaranteed to receive the same message and in the same order (at the application level).
 
-% TODO: killer numbers
+Our implementation can run either on top of normal UDP sockets or using custom userland networking on top of DPDK.
+While the former makes local development easier, the latter allows for really high throughput and low latency by minimizing context switch overhead.
+We were able to get up to 500'000 messages per second on our test cluster, with 99th percentile latency as low as \SI{30}{\micro\second}.
+
+We also observed the effect of application workload on the performance of the consensus algorithm.
+In particular, we show that executing workloads in the networking thread on the replicas can lead to important losses of throughput.
+Therefore, our implementation executes the application logic in a separate thread from the networking and consensus code.
 
 Chapter \ref{chap:background} provides some background about consensus algorithms and transports.
 Chapter~\ref{chap:design} describes our protocol design, while Chapter~\ref{chap:implementation} describes the reference implementation.
 Finally, Chapter~\ref{chap:evaluation} contains our evaluation of the system's performance under various loads.
+We also compare our consensus approach to other published ones in Chapter~\ref{chap:related-work}.

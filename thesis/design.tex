@@ -57,6 +57,7 @@ The different types of Raft messages are differentiated in the payload of the me
         Followers acknowledge the replication (3).
         Leader marks the request committed (4).
         Commited requests are forwarded to the application and reply is sent to the client (5).
+        Note that all arrows are complete \gls{r2p2} messages: if they span multiple UDP datagrams, we wait for the complete message to arrive before replicating it.
     \label{fig:client-server-interaction}
     }
 \end{figure}

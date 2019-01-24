@@ -21,11 +21,12 @@ To do so, we modified the code of the server program to fall back to being a fol
 A new leader election would then take place and the requests sent while the cluster was leaderless would be lost.
 
 All experiments were done on machines equipped with two Intel Xeon E5-2650 CPUs running at \SI{2.6}{\giga\hertz}.
-Each machine had \SI{64}{\giga\byte} of RAM, out of which XXX were used for the application. % TODO: How many RAM for the app?
+Each machine had \SI{64}{\giga\byte} of RAM, out of which \SI{2}{\giga\byte} were allocated for DPDK.
 The machines were equipped with Intel~82599ES \glspl{nic} connected to a \SI{10}{\giga\bit\per\second} switch.
 All the server machines were running the kernel bypass implementation of the stack, while the client was running the userland one.
 
 \section{Latency - Throughput}
+\label{sec:latency_throughput}
 
 In this experiment, we varied the load on the cluster and measured the 99th percentile latency of the requests.
 The idea here is that the latency graph should exhibit a large vertical asymptote as we reach the maximum capacity of the system. 
@@ -33,6 +34,32 @@ To have a baseline performance, We also ran the same load test on a non-replicat
 
 This experiment was performed on a cluster of three machines.
 The result can be seen on Figure~\ref{fig:latency-throughput}.
+
+% TODO
+% key finding: latency of replica ack matters a lot
+% in the 10 us case, if the replica runs the synthetic workload in the same
+% thread as raft, very low throughput
+% We then patched the algorithm to have the replicas not run the workload
+% (simulating worker thread as far as Raft is concerned)
+% much better throughput
+
+\begin{figure}[p]
+    \centering
+    \begin{subfigure}[t]{0.8\textwidth}
+        \includegraphics[width=\textwidth]{plots/latency_10us_synthetic}
+        \caption{\SI{10}{\micro\second} work}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.8\textwidth}
+        \includegraphics[width=\textwidth]{plots/latency_0us_synthetic}
+        \caption{\SI{0}{\micro\second} work (echo server)}
+    \end{subfigure}
+    \caption{
+        Throughput of the system under both a \SI{10}{\micro\second} artificial processing load and without any processing time.
+        \label{fig:latency-throughput}
+    }
+\end{figure}
+
 
 \section{Impact of cluster size}
 
