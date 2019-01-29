@@ -35,14 +35,6 @@ To have a baseline performance, We also ran the same load test on a non-replicat
 This experiment was performed on a cluster of three machines.
 The result can be seen on Figure~\ref{fig:latency-throughput}.
 
-% TODO
-% key finding: latency of replica ack matters a lot
-% in the 10 us case, if the replica runs the synthetic workload in the same
-% thread as raft, very low throughput
-% We then patched the algorithm to have the replicas not run the workload
-% (simulating worker thread as far as Raft is concerned)
-% much better throughput
-
 \begin{figure}[p]
     \centering
     \begin{subfigure}[t]{0.8\textwidth}
@@ -60,6 +52,11 @@ The result can be seen on Figure~\ref{fig:latency-throughput}.
     }
 \end{figure}
 
+This experiment clearly shows that the latency of replica acknowledgment matters a lot for this type of system.
+Running the synthetic workload in the network thread (in a symmetric design) has very bad performance.
+For example, at a \SI{200}{\micro\second} latency \gls{slo}, running the workload in a separate thread has twice the throughput of the same-thread implementation.
+This was not what we expected, and had to be retrofitted in the implementation.
+This discovery should definitely be taken in account when designing future consensus systems.
 
 \section{Impact of cluster size}
 
