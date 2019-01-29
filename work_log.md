@@ -331,3 +331,97 @@ Date:   Mon Jan 21 19:21:38 2019 +0100
     this. In a real life system of course, committed entries would have to
     be executed in the replicas as well, but they could be offloaded to a
     separate worker thread, and only catch up in case of leader change.
+
+# Last week
+
+##paxos made switchy
+
+base idea: implement paxos on switches, on top of p4.
+This reduces latency and increases throughput by making use of hardware acceleration.
+It can run on semi-commodity network switches: programmable swithces are becoming more comon thanks to SDN.
+
+coordinator and acceptors are run in the network, while proposer and learner are on commodity servers.
+No modification to Paxos are done, but it could be possible to do speculative Paxos / Fast Paxos to gain even more.
+Quite a lot of time spent on describing implementation strategies.
+
+no benchmark, but emulator implementation.
+
+##consensus for non volatile memory
+
+New technology emerges, called Storage Class Memories (SCM).
+Needs to reconsider how we implement distributed storage for them.
+That's because their mean time to failure is not really great.
+
+Idea: How about using consensus to properly replicate read and writes to several memory instances?
+Using a simple protocol would enable the protocol to be implemented at the hardware level (behind the memory controller), offering a complete replicated RAM.
+Implementing it in hardware would also allow ultra fast consensus.
+
+The chosen protocol is called ADB and is only for atomic read and writes.
+Unlike State Machine Replication protocols, it does not allow for arbitrary operations like increment, compare-and-swap, etc.
+It is much simpler though, and achieves reads and writes in 2RTT.
+This implementation assumes that the network switch can be a single point of failure and it is acceptable.
+
+Their experiment was done using two parts:
+
+1. A client implements fake memory regions using mmap() on a custom character device (which implements network consensus)
+2. The servers are FPGA with DRAM storage to emulate SCM serversj.
+
+They get about 18 us to fetch a cache line from a remote replicated memory, vs 3 us from  a local memory.
+
+##Datacenter RPCs can be General and Fast
+
+Important note: they use 100 gbps NICs (Mellanox CX5)
+
+Core idea: we need a new RPC implementation for inside data center.
+Works on lossy ethernet fabrics, but also on lossless Infiniband.
+They use techniques similar to R2P2 with message buffers, kernel bypass, and so on.
+
+Includes some flow control based on credits.
+Basically, each session must spend 1 credit to tx one packet, and gets one back on each rx.
+This implements end to end flow control, like TCP windows.
+
+Key design objective: optimize for the common case (no packet loss, uncongested network).
+Also implement congestion control.
+
+They implement Raft on top of their eRPC protocol and get very good latencies, around 5.5 us (we are at around 23 us on slower network hard to say how better it would be).
+They claim this is the fastest replicated key value store to their knowledge, which may very well be true.
+
+Implements at most once semantics.
+
+##Homa
+
+New RPC architecture that makes uses of hardware priority queues to get lower latencies.
+Some key stuff is to allocate priorities at receivers.
+Implements at least once semantics.
+
+The key understanding here is that we want ultra low latencies on short messages.
+Since we cannot schedule packets / have congestion control in low latencies (1.5 rtt vs 0.5 rtt), we will have queueing.
+But queueing destroys tail latency -> use in network priorities to bypass queues for short packets.
+
+optimize for short messages, the message size is given to the transport at first byte
+
+paper to read: Consensus in a Box and NetChain, to get an idea of how fast we can get.
+
+##IX operating system
+
+* Tries to take the best of 4 tradeoffs: tail latency, high packet rate, isolation and ressource efficiency.
+* Run to completion model
+* Dataplanes run using virtualization extensions to be isolated from control plane
+* One application per dataplane, completely isolated from each other
+* batch syscalls, with bounded batching
+* expose some complexity (e.g. TCP flow control) to the application
+
+key achievements: 40 gb line rate on a single cpu socket, one way latency of about 10 us
+
+## ZygOS
+
+Extends the work done on IX by implementing a conservative work scheduler.
+That means that no CPU cores can be idle if there is still packets to be processed.
+
+It does so by having three layers: networking, shuffle (which allows task stealing by other CPUs), and finally application execution layer
+Note that the shuffle queue stops the run to completion model: packets can be queued instead of immediately being processed.
+
+
+#Notes on the queue bug
+
+* seems to affect leader performance

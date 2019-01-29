@@ -1,2 +1,29 @@
-\chapter{Related Work}
-\label{chap:related-work}
+\chapter{Related Work}\label{chap:related-work}
+
+\section{Datacenter RPC}
+
+\gls{r2p2} was not the first alternative transport for datacenter \gls{rpc}.
+Over recent years, several alternatives have been suggested, based on the increased scaling difficulty of existing protocols.
+
+eRPC\cite{erpc} is a novel \gls{rpc} protocol for datacenter applications.
+Like \gls{r2p2}, it can be deployed on conventional Ethernet/IP fabrics for conventional network compatibility.
+However, it can also be deployed on lossless fabrics like Infiniband, which might become more relevant in future datacenter designs.
+Their design provides end to end flow control (like TCP) by using credits on the sender side: each sender spends one credit when sending a packet, and gets one back when receiving one packet.
+eRPC also provide congestion control, but optimizes for the common case of an uncongested network.
+On a \SI{100}{\giga\bit\per\second} network, eRPC can get median latencies as low as \SI{2}{\micro\second}, close to an harware-assisted \gls{rdma} read (\SI{2.3}{\micro\second}).
+
+Raft was implemented as an application running on top of eRPC.
+Their experiment shown a replication tail latency of \SI{6.3}{\micro\second} on \SI{100}{\giga\bit\per\second} hardware.
+We expect our implementation to have similar results when running on similar hardware, but we did not test this.
+
+Another transport protocol design is Homa\cite{homa}, which only targets conventional Ethernet deployements, like \gls{r2p2}.
+The key observation driving Homa's design was that congestion control is very bad for latency of short messages, increasing the packet latency by a factor 3 (0.5 \gls{rtt} to 1.5 \gls{rtt}) to contact a coordinator or the receiver.
+However, congestion in the network buffers will also negatively impact tail latency.
+To solve this problem, Homa uses hardware priority queues to prioritize packets with the shortest remaining data transmission.
+The priorities are allocated by the receiver based on the total message size (contained in the header) and sent back to the senders.
+Homa also reduces incast by keeping track of the number of in-flight \glspl{rpc}, which reduces network congestion further.
+
+\section{Kernel Bypass}
+
+
+\section{Consensus in the network}
