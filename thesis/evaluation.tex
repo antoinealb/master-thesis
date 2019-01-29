@@ -115,17 +115,19 @@ Unfortunately we were not able to run it on our experimental setup.
 Therefore, direct performance comparison might not be very accurate.
 In particular, their node's CPU is much older than ours (2008 vs 2012).
 
-The most interesting result is the latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}, which is one \gls{rtt}.
-In comparison, we achieve a median latency of \SI{104}{\micro\second}, which is slower.  % TODO: Check that latency number
-This is due to a Paxos optimization called Fast Paxos\cite{lamport2006fast}, in which clients bypass the leader, saving one network hop.
+The most interesting result is the latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}.
+We compare this with our \SI{1}{\micro\second} synthetic workload, which is closer to the kernel paxos case (which does not do any computation on the chosen values).
+We achieve a median latency of \SI{31}{\micro\second}, despite a Paxos optimization called Fast Paxos\cite{lamport2006fast}.
+In Fast Paxos, clients can bypass the leader, saving one network hop.
 
 While Fast Paxos could be theoretically applied to our system, we decided not to for several reasons.
 First, we already had a working Raft implementation at this point in our work, and Fast Paxos is significantly harder to implement than Paxos.
 Then, Fast Paxos requires more machines to reach consensus: $2/3$ of the nodes must be healthy for a value to be accepted.
 This means that to handle $n$ failures, Fast Paxos requires $3n + 1$ replicas, where classic Paxos and Raft only require $2n + 1$.
+Note that if the $3n + 1$ replica conditions is not met, Fast Paxos will fall back to classic Paxos.
 Finally, under high loads, the probability of message collision is quite high, and in case of collisions the number of network hops in Fast Paxos is the same as with Classic Paxos or Raft.
 
-On the throughput side, Kernel Paxos claims \SI{19}{\kilo msg\per\second}, whereas our implementation reached \SI{42}{\kilo msg\per\second}, a $2.2x$ increase. % TODO: Check this throughput number
+On the throughput side, Kernel Paxos claims \SI{175}{\kilo msg\per\second}, whereas our implementation reached \SI{275}{\kilo msg\per\second}, a $1.6x$ increase.
 According to Kernel Paxos authors, their throughput is bound by CPU performance on the proposers.
 We were not able to verify this claim, as we were not able to run their implementation in our cluster.
 As they did not publish the model of their CPU for their \SI{10}{\giga\bit\per\second} experiments, a direct comparison is hard to do.
