@@ -1,18 +1,32 @@
-@inproceedings{chubby,
-    title={The Chubby lock service for loosely-coupled distributed systems},
-    author={Burrows, Mike},
-    booktitle={Proceedings of the 7th symposium on Operating systems design and implementation},
-    pages={335--350},
-    year={2006},
-    organization={USENIX Association}
+@article{paxos_made_simple,
+  title={Paxos made simple},
+  author={Lamport, Leslie and others},
+  journal={ACM Sigact News},
+  volume={32},
+  number={4},
+  pages={18--25},
+  year={2001}
 }
 
-@inproceedings{kernelpaxos,
-    title={{Kernel Paxos}},
-    author={Esposito, Emanuele Giuseppe and Coelho, Paulo and Pedone, Fernando},
-    booktitle={Reliable Distributed Systems, 2018 IEEE International Symposium on},
-    year = {2018},
-    organization = {IEEE}
+@inproceedings{raft,
+    title={In search of an understandable consensus algorithm.},
+    author={Ongaro, Diego and Ousterhout, John K},
+    booktitle={USENIX Annual Technical Conference},
+    pages={305--319},
+    year={2014}
+}
+
+@online{grpc,
+    title = {{gRPC, A high performance RPC framework}},
+    howpublished = {\url{https://grpc.io/}},
+    year={2015},
+}
+
+@techreport{thrift,
+    title={Thrift: Scalable cross-language services implementation},
+    author={Slee, Mark and Agarwal, Aditya and Kwiatkowski, Marc},
+    institution = {Facebook},
+    year={2007}
 }
 
 @misc{r2p2,
@@ -22,27 +36,37 @@
     notes={Unpublished at time of writing},
 }
 
-@inproceedings{netbricks,
-    title={{NetBricks: Taking the V out of NFV.}},
-    author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
-    booktitle={Proceedings of the 12th symposium on Operating systems design and implementation},
-    pages={203--216},
+@misc{measuring_context_switch,
+    howpublished = {\url{https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/}},
+    title = {Measuring context switching and memory overheads for Linux threads},
+    year = {2018},
+    author = {Bendersky, Eli}
+}
+
+
+@inproceedings{maglev,
+    title={Maglev: A Fast and Reliable Software Network Load Balancer.},
+    author={Eisenbud, Daniel E and Yi, Cheng and Contavalli, Carlo and Smith, Cody and Kononov, Roman and Mann-Hielscher, Eric and Cilingiroglu, Ardas and Cheyney, Bin and Shang, Wentao and Hosein, Jinnah Dylan},
+    booktitle= {Proceedings of the 13th symposium on Networked systems design and implementation},
+    organization={USENIX Association},
+    pages={523--535},
     year={2016}
 }
 
-@techreport{ogier,
-    title={A Zero Copy Key-Value Store in Rust},
-    author={Bouvier, Ogier},
-    institution={EPFL},
-    year={2018},
+@misc{kernel_self_protection,
+    howpublished = {\url{https://www.kernel.org/doc/html/v4.18/security/self-protection.html}},
+    title = {Kernel Self-Protection},
+    year = {2018},
+    author = {{The kernel development community}},
+    notes = {Consulted on January 13th, 2019.}
 }
-@inproceedings{paxoslive,
-    title={Paxos made live: an engineering perspective},
-    author={Chandra, Tushar D and Griesemer, Robert and Redstone, Joshua},
-    booktitle={Proceedings of the twenty-sixth annual ACM symposium on Principles of distributed computing},
-    pages={398--407},
-    year={2007},
-    organization={ACM}
+
+@inproceedings{kernelpaxos,
+    title={{Kernel Paxos}},
+    author={Esposito, Emanuele Giuseppe and Coelho, Paulo and Pedone, Fernando},
+    booktitle={Reliable Distributed Systems, 2018 IEEE International Symposium on},
+    year = {2018},
+    organization = {IEEE}
 }
 
 @article{paxos,
@@ -56,12 +80,22 @@
     publisher={Citeseer}
 }
 
-@inproceedings{raft,
-    title={In search of an understandable consensus algorithm.},
-    author={Ongaro, Diego and Ousterhout, John K},
-    booktitle={USENIX Annual Technical Conference},
-    pages={305--319},
-    year={2014}
+@inproceedings{chubby,
+    title={The Chubby lock service for loosely-coupled distributed systems},
+    author={Burrows, Mike},
+    booktitle={Proceedings of the 7th symposium on Operating systems design and implementation},
+    pages={335--350},
+    year={2006},
+    organization={USENIX Association}
+}
+
+@inproceedings{paxoslive,
+    title={Paxos made live: an engineering perspective},
+    author={Chandra, Tushar D and Griesemer, Robert and Redstone, Joshua},
+    booktitle={Proceedings of the twenty-sixth annual ACM symposium on Principles of distributed computing},
+    pages={398--407},
+    year={2007},
+    organization={ACM}
 }
 
 @inproceedings{zookeeper,
@@ -74,27 +108,19 @@
     organization={Boston, MA, USA}
 }
 
-@inproceedings{maglev,
-    title={Maglev: A Fast and Reliable Software Network Load Balancer.},
-    author={Eisenbud, Daniel E and Yi, Cheng and Contavalli, Carlo and Smith, Cody and Kononov, Roman and Mann-Hielscher, Eric and Cilingiroglu, Ardas and Cheyney, Bin and Shang, Wentao and Hosein, Jinnah Dylan},
-    booktitle= {Proceedings of the 13th symposium on Networked systems design and implementation},
-    organization={USENIX Association},
-    pages={523--535},
-    year={2016}
-}
-
-@misc{jepsen,
-    title={Jepsen: Distributed Systems Safety Research},
-    author={Kingsbury, Kyle},
-    howpublished={\url{https://jepsen.io/}},
+@misc{fast_queue,
+    title={{A Fast Lock-Free Queue for C++}},
+    author={Desrochers, Cameron},
     year={2013},
+    howpublished={\url{http://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++}},
 }
 
-@techreport{thrift,
-    title={Thrift: Scalable cross-language services implementation},
-    author={Slee, Mark and Agarwal, Aditya and Kwiatkowski, Marc},
-    institution = {Facebook},
-    year={2007}
+@inproceedings{netmap,
+  title={{Netmap: a novel framework for fast packet I/O}},
+  author={Rizzo, Luigi},
+  booktitle={21st USENIX Security Symposium (USENIX Security 12)},
+  pages={101--112},
+  year={2012}
 }
 
 @misc{ixy,
@@ -107,32 +133,11 @@
 }
 
 
-@online{grpc,
-    title = {{gRPC, A high performance RPC framework}},
-    howpublished = {\url{https://grpc.io/}},
-    year={2015},
-}
-
 @online{dpdk,
     title = {{DPDK, The Data Plane Development Kit}},
     key = {DPDK},
     howpublished = {\url{https://www.dpdk.org/}},
     organization = {Intel}
-}
-
-@online{spdk,
-    title = {{SPDK, The Storage Performance Development Kit}},
-    key = {SPDK},
-    howpublished = {\url{https://spdk.io/}},
-    organization = {Intel}
-}
-
-@inproceedings{netmap,
-  title={{Netmap: a novel framework for fast packet I/O}},
-  author={Rizzo, Luigi},
-  booktitle={21st USENIX Security Symposium (USENIX Security 12)},
-  pages={101--112},
-  year={2012}
 }
 
 @article{lamport2006fast,
@@ -146,38 +151,18 @@
   publisher={Springer}
 }
 
-@inproceedings{paxos_classic_fast,
-  title={Classic paxos vs. fast paxos: caveat emptor},
-  author={Junqueira, Flavio and Mao, Yanhua and Marzullo, Keith},
-  booktitle={Proceedings of USENIX Hot Topics in System Dependability},
-  year={2007},
-  organization = {USENIX}
+@online{spdk,
+    title = {{SPDK, The Storage Performance Development Kit}},
+    key = {SPDK},
+    howpublished = {\url{https://spdk.io/}},
+    organization = {Intel}
 }
 
-@article{paxos_made_simple,
-  title={Paxos made simple},
-  author={Lamport, Leslie and others},
-  journal={ACM Sigact News},
-  volume={32},
-  number={4},
-  pages={18--25},
-  year={2001}
-}
-
-@misc{measuring_context_switch,
-    howpublished = {\url{https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/}},
-    title = {Measuring context switching and memory overheads for Linux threads},
-    year = {2018},
-    author = {Bendersky, Eli}
-}
-
-
-@misc{kernel_self_protection,
-    howpublished = {\url{https://www.kernel.org/doc/html/v4.18/security/self-protection.html}},
-    title = {Kernel Self-Protection},
-    year = {2018},
-    author = {{The kernel development community}},
-    notes = {Consulted on January 13th, 2019.}
+@misc{jepsen,
+    title={Jepsen: Distributed Systems Safety Research},
+    author={Kingsbury, Kyle},
+    howpublished={\url{https://jepsen.io/}},
+    year={2013},
 }
 
 @inproceedings{specpaxos,
@@ -186,30 +171,6 @@
   booktitle={NSDI},
   pages={43--57},
   year={2015}
-}
-
-@misc{lancent,
-  title={Lancet: A self-correcting Latency Measuring Tool},
-  author={Prekas, George and Kogias, Marios and Bugnion, Edouard},
-  year={2019},
-}
-
-@misc{fast_queue,
-    title={{A Fast Lock-Free Queue for C++}},
-    author={Desrochers, Cameron},
-    year={2013},
-    howpublished={\url{http://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++}},
-}
-
-@article{paxos_switchy,
-  title={Paxos made switch-y},
-  author={Dang, Huynh Tu and Canini, Marco and Pedone, Fernando and Soul{\'e}, Robert},
-  journal={ACM SIGCOMM Computer Communication Review},
-  volume={46},
-  number={2},
-  pages={18--24},
-  year={2016},
-  publisher={ACM}
 }
 
 @inproceedings{dang2018consensus,
@@ -229,5 +190,44 @@
 	address = {Boston, MA},
 	url = {https://www.usenix.org/conference/nsdi19/presentation/kalia},
 	publisher = {{USENIX} Association},
+}
+
+@misc{lancent,
+  title={Lancet: A self-correcting Latency Measuring Tool},
+  author={Prekas, George and Kogias, Marios and Bugnion, Edouard},
+  year={2019},
+}
+
+@inproceedings{netbricks,
+    title={{NetBricks: Taking the V out of NFV.}},
+    author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
+    booktitle={Proceedings of the 12th symposium on Operating systems design and implementation},
+    pages={203--216},
+    year={2016}
+}
+
+@techreport{ogier,
+    title={A Zero Copy Key-Value Store in Rust},
+    author={Bouvier, Ogier},
+    institution={EPFL},
+    year={2018},
+}
+@inproceedings{paxos_classic_fast,
+  title={Classic paxos vs. fast paxos: caveat emptor},
+  author={Junqueira, Flavio and Mao, Yanhua and Marzullo, Keith},
+  booktitle={Proceedings of USENIX Hot Topics in System Dependability},
+  year={2007},
+  organization = {USENIX}
+}
+
+@article{paxos_switchy,
+  title={Paxos made switch-y},
+  author={Dang, Huynh Tu and Canini, Marco and Pedone, Fernando and Soul{\'e}, Robert},
+  journal={ACM SIGCOMM Computer Communication Review},
+  volume={46},
+  number={2},
+  pages={18--24},
+  year={2016},
+  publisher={ACM}
 }
 
