@@ -18,3 +18,10 @@ mkdir -p ../thesis/figures/plots/
     --data single_node_0_us_synthetic.txt --legend "No replication" \
     --ymax 80 \
     --output ../thesis/figures/plots/latency_0us_synthetic.pdf
+
+../scripts/plot/plot_lancet.py \
+    --data single_node_1_us_synthetic.txt --legend "Unreplicated" \
+    --data replicated_3_replicas_1_us_synthetic.txt --legend "3 replicas" \
+    --data replicated_5_replicas_1_us_synthetic.txt --legend "5 replicas" \
+    --ymax 80 \
+    --output ../thesis/figures/plots/cluster_size.pdf
