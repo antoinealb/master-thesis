@@ -86,3 +86,5 @@ possible structure for related work:
 
 Take that from bibliography.
 Compare my work to other people's.
+
+to add: appendix with how to run my code
