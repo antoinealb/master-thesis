@@ -60,22 +60,37 @@ This discovery should definitely be taken in account when designing future conse
 
 \section{Impact of cluster size}
 
+% TODO: Maybe redo this experiment
+
 In this experiment, the goal was to see how the number of replicas impacted system performance.
 Adding new machines to the system increases its reliablity by increasing the number of failures required to have a loss of consistency.
-However, our intuition about the system also led us to expect an increased tail latency.
-
+However, we can expect a loss of system performance when gaining in reliability.
+Throughput will go down, as adding replicas will increase the number of messages per request.
+It should also increase tail latency, but not by much, as we must wait on a bigger quorum of machines.
 The results can be see on Figure~\ref{fig:cluster-size}.
 
-\section{Impact of leader crash}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{plots/cluster_size}
+    \caption{Impact of quorum size on system performance.
+        This was ran using a \SI{1}{\micro\second} synthetic workload.
+    \label{fig:cluster-size}
+    }
+\end{figure}
 
-Since in Raft all the requests go through the leader, we wanted to evaluate the impact of a leader crash on throughput.
-Our system does not queue requests in a situation with no leaders; they are simply dropped.
-Therefore we expect the throughput to drop to zero during leader re-election, then to rise back to normal operating levels.
 
-The results can be seen on Figure~\ref{fig:leader-crash}.
-Note that the duration of the re-election period depends on the chosen values for the Raft timers.
-In this situation, the heartbeat period is set to \SI{10}{\milli\second}, and the election timer period is uniformly distributed between \SIrange{500}{1000}{\milli\second}.
-As they could be tuned to other values, this is more of a qualitative result.
+% \section{Impact of leader crash}
+% 
+% % TODO: Do this experiment
+% 
+% Since in Raft all the requests go through the leader, we wanted to evaluate the impact of a leader crash on throughput.
+% Our system does not queue requests in a situation with no leaders; they are simply dropped.
+% Therefore we expect the throughput to drop to zero during leader re-election, then to rise back to normal operating levels.
+% 
+% The results can be seen on Figure~\ref{fig:leader-crash}.
+% Note that the duration of the re-election period depends on the chosen values for the Raft timers.
+% In this situation, the heartbeat period is set to \SI{10}{\milli\second}, and the election timer period is uniformly distributed between \SIrange{500}{1000}{\milli\second}.
+% As they could be tuned to other values, this is more of a qualitative result.
 
 
 \section{Comparison with Kernel Paxos}
