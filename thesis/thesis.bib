@@ -16,6 +16,17 @@
     year={2014}
 }
 
+@article{paxos,
+    title={The implementation of reliable distributed multiprocess systems},
+    author={Lamport, Leslie},
+    journal={Computer networks},
+    volume={2},
+    number={2},
+    pages={95--114},
+    year={1978},
+    publisher={Citeseer}
+}
+
 @online{grpc,
     title = {{gRPC, A high performance RPC framework}},
     howpublished = {\url{https://grpc.io/}},
@@ -67,17 +78,6 @@
     booktitle={Reliable Distributed Systems, 2018 IEEE International Symposium on},
     year = {2018},
     organization = {IEEE}
-}
-
-@article{paxos,
-    title={The implementation of reliable distributed multiprocess systems},
-    author={Lamport, Leslie},
-    journal={Computer networks},
-    volume={2},
-    number={2},
-    pages={95--114},
-    year={1978},
-    publisher={Citeseer}
 }
 
 @inproceedings{chubby,
@@ -183,15 +183,6 @@
 	publisher = {{USENIX} Association},
 }
 
-@inproceedings{consensus_memory,
-  title={Consensus for Non-Volatile Main Memory},
-  author={Dang, Huynh Tu and Hofmann, Jaco and Liu, Yang and Radi, Marjan and Vucinic, Dejan and Soul{\'e}, Robert and Pedone, Fernando},
-  booktitle={2018 IEEE 26th International Conference on Network Protocols (ICNP)},
-  pages={406--411},
-  year={2018},
-  organization={IEEE}
-}
-
 @inproceedings{homa,
  author = {Montazeri, Behnam and Li, Yilong and Alizadeh, Mohammad and Ousterhout, John},
  title = {Homa: A Receiver-driven Low-latency Transport Protocol Using Network Priorities},
@@ -210,45 +201,23 @@
  keywords = {data centers, low latency, network stacks, transport protocols},
 }
 
-@misc{lancent,
-  title={Lancet: A self-correcting Latency Measuring Tool},
-  author={Prekas, George and Kogias, Marios and Bugnion, Edouard},
-  year={2019},
-}
-
-@inproceedings{netbricks,
-    title={{NetBricks: Taking the V out of NFV.}},
-    author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
-    booktitle={Proceedings of the 12th symposium on Operating systems design and implementation},
-    pages={203--216},
-    year={2016}
-}
-
-@inproceedings{paxos_classic_fast,
-  title={Classic paxos vs. fast paxos: caveat emptor},
-  author={Junqueira, Flavio and Mao, Yanhua and Marzullo, Keith},
-  booktitle={Proceedings of USENIX Hot Topics in System Dependability},
-  year={2007},
-  organization = {USENIX}
-}
-
-@article{paxos_switchy,
-  title={Paxos made switch-y},
-  author={Dang, Huynh Tu and Canini, Marco and Pedone, Fernando and Soul{\'e}, Robert},
-  journal={ACM SIGCOMM Computer Communication Review},
-  volume={46},
-  number={2},
-  pages={18--24},
-  year={2016},
-  publisher={ACM}
-}
-
 @inproceedings{ix,
   title={{IX: A protected dataplane operating system for high throughput and low latency}},
   author={Belay, Adam and Prekas, George and Klimovic, Ana and Grossman, Samuel and Kozyrakis, Christos and Bugnion, Edouard},
   booktitle={Proceedings of the 11th USENIX Symposium on Operating System Design and Implementation (OSDI)},
   year={2014},
   organization={USENIX}
+}
+
+@article{arrakis,
+  title={Arrakis: The operating system is the control plane},
+  author={Peter, Simon and Li, Jialin and Zhang, Irene and Ports, Dan and Woos, Doug and Krishnamurthy, Arvind and Anderson, Thomas and Roscoe, Timothy},
+  journal={ACM Transactions on Computer Systems (TOCS)},
+  volume={33},
+  number={4},
+  pages={11},
+  year={2016},
+  publisher={ACM}
 }
 
 @inproceedings{zygos,
@@ -260,13 +229,21 @@
   organization={ACM}
 }
 
-@article{arrakis,
-  title={Arrakis: The operating system is the control plane},
-  author={Peter, Simon and Li, Jialin and Zhang, Irene and Ports, Dan and Woos, Doug and Krishnamurthy, Arvind and Anderson, Thomas and Roscoe, Timothy},
-  journal={ACM Transactions on Computer Systems (TOCS)},
-  volume={33},
-  number={4},
-  pages={11},
+@inproceedings{netbricks,
+    title={{NetBricks: Taking the V out of NFV.}},
+    author={Panda, Aurojit and Han, Sangjin and Jang, Keon and Walls, Melvin and Ratnasamy, Sylvia and Shenker, Scott},
+    booktitle={Proceedings of the 12th symposium on Operating systems design and implementation},
+    pages={203--216},
+    year={2016}
+}
+
+@article{paxos_switchy,
+  title={Paxos made switch-y},
+  author={Dang, Huynh Tu and Canini, Marco and Pedone, Fernando and Soul{\'e}, Robert},
+  journal={ACM SIGCOMM Computer Communication Review},
+  volume={46},
+  number={2},
+  pages={18--24},
   year={2016},
   publisher={ACM}
 }
@@ -289,3 +266,26 @@
   year={1995},
   publisher={ACM}
 }
+@inproceedings{consensus_memory,
+  title={Consensus for Non-Volatile Main Memory},
+  author={Dang, Huynh Tu and Hofmann, Jaco and Liu, Yang and Radi, Marjan and Vucinic, Dejan and Soul{\'e}, Robert and Pedone, Fernando},
+  booktitle={2018 IEEE 26th International Conference on Network Protocols (ICNP)},
+  pages={406--411},
+  year={2018},
+  organization={IEEE}
+}
+
+@misc{lancent,
+  title={Lancet: A self-correcting Latency Measuring Tool},
+  author={Prekas, George and Kogias, Marios and Bugnion, Edouard},
+  year={2019},
+}
+
+@inproceedings{paxos_classic_fast,
+  title={Classic paxos vs. fast paxos: caveat emptor},
+  author={Junqueira, Flavio and Mao, Yanhua and Marzullo, Keith},
+  booktitle={Proceedings of USENIX Hot Topics in System Dependability},
+  year={2007},
+  organization = {USENIX}
+}
+
