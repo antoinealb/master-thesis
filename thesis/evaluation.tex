@@ -5,6 +5,7 @@ In this chapter, we measure the performance of our implementation.
 In particular, we will focus on two key characteristics: latency and throughput.
 Throughput is defined as the number of messages than can be succesfully replicated per second.
 Latency is the time between the sending of a request and the reception of the reply (measured at the client).
+To generate the load and measure the latency, the Lancet distributed load generator\cite{lancet} was used.
 
 We designed three different experiments to explore how our system reacts to different conditions.
 In the first experiment, we measure the latency of a replicated operation under different fixed throughputs.
