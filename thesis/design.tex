@@ -44,7 +44,27 @@ For example, a user might specify that no write should be lost but that stale re
 Then write requests would be sent with the \texttt{REPLICATED\_ROUTE} policy, while reads are sent with \texttt{LB\_ROUTE}.
 
 Another addition to the R2P2 protocol was to add a new \emph{MessageType} for Raft-related messages.
-The different types of Raft messages are differentiated in the payload of the message.
+The different types of Raft messages are differentiated in the \gls{r2p2} payload using a type field.
+The list of messages and their description can be found below.
+In addition, each message contains the term number of the sender, as it is required for all Raft operations.
+
+\begin{description}
+    \item[VoteRequest] Fields: \texttt{last\_log\_index}, \texttt{last\_log\_term}.
+        Sent from one candidate to a follower to request a vote for itself.
+        The candidate includes the last log entry's index and term so that followers can check if the candidate's log is up to date.
+    \item[VoteReply] Fields: \texttt{vote\_reply}.
+        Reply to a vote request, sent from a follower to a candidate.
+        Contains a boolean indicating wether or not the follower granted its vote.
+    \item[AppendEntriesRequest] Fields: \texttt{count}, \texttt{leader\_commit}, \texttt{previous\_entry\_term}, \texttt{previous\_entry\_index}, \texttt{entries}.
+        This message is sent from the leader to the followers when there is new entries to add to the log, or periodically as a heartbeat if there is no activity.
+        It contains data about the entry immediately before the provided one so that followers can check for gap in their log.
+        It also serves to forward the commit index information to followers.
+    \item[AppendEntryReply] Fields: \texttt{success}, \texttt{last\_index}.
+        This message is sent from followers to leader and contains wether or not the new entries were successfully applied to the log, as well as the last index in the follower's log.
+        This information can then be used by the leader to decide which entries to send next, as well as update the commit index.
+\end{description}
+
+
 
 \section{Request lifecycle}
 
