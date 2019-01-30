@@ -12,16 +12,16 @@ One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techn
 Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO.
 This works by submitting filesystem operations in a ring buffer, which will get collected and executed by the kernel later.
 
-% TODO: Mention that Kernel Paxos does not do disk backed persistency
-% TODO: Maybe prototype it using libuv?
-
 \section{Max-latency batching}
 
-% TODO: Redo this part
+Currently, our Raft implementation immediately sends out \emph{AppendEntries} messages as soon as an incoming request is received.
+While this optimal from a latency perspective, it creates a lot of overhead if most requests are small.
+The classic way to circumvent this problem is to batch requests before sending one \emph{AppendEntries} message (\ie like the original Raft implementation\cite{raft}).
 
-Random idea: Currently requests are either immediately replicated to the log or we wait for a configurable timeout to expire, then send a batch of request.
-This could lead to bad behaviour in heavily loaded servers (many small appendrequests) or create timeouts that are too important for the application.
-Maybe a smart batching policy is possible and should be designed in the protocol.
+The downside of naive batching like this is that it increases latency.
+An alternative might be to choose the batching period according to some \glspl{slo}.
+If some requests are more latency-sensitive than others, the latency \gls{slo} could be included in the \gls{r2p2} header itself, allowing the server to take an informed batching decision.
+
 
 \section{Consistency verification of the protocol}
 
