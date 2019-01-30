@@ -25,5 +25,47 @@ Homa also reduces incast by keeping track of the number of in-flight \glspl{rpc}
 
 \section{Kernel Bypass}
 
+IX\cite{ix} and Arrakis\cite{arrakis} are both recent specialized kernel bypass frameworks.
+They both come from the observatoin that the overhead of having the Linux operating system in the data path causes too much latency due to complex software path and costly context switching between kernel and application.
+However, they also acknowledge that some of this latency is due to security and isolation functionalities, which have historically been implemented as part of the kernel.
+In order to keep applications isolated, IX and Arrakis use Intel's virtualization extensions to isolate the different data planes from each other and from the control plane.
+While IX uses Linux as the virtualization supervisor and control plane, Arrakis is based on a research operating system called Barrelfish.
+Both IX and Arrakis implemented custom system calls after observing that POSIX semantics were a poor fit to \glspl{nic} hardware queues.
+Arrakis also tackles the storage space, providing kernel bypass for \gls{raid} controllers.
+
+Arrakis and IX implement a run-to-completion model, in which all the processing for a packet (or batch of packet) is done before moving to the next one.
+This increases performance by having better cache locality and avoiding copies.
+However it can also lead to unbalanced situations where some CPU cores are idle, while others still have incoming packets enqueued, especially if task duration vary a lot.
+ZygOS\cite{zygos} addresses this issue by having a queue between the network layer and the application layer.
+A scheduler then implements task stealing, allowing idle CPU cores to take tasks from other cores.
+This breaks from the run-to-completion model by adding a queue in the middle.
+Authors note a 1.26x speedup over IX and 1.63x over Linux.
+
+NetBricks\cite{netbricks} takes a different approach for data plane isolation.
+Where Linux enforces this through the kernel and IX through hardware extensions, NetBricks proposes the use of compile-time checks for safety.
+Their implementation uses Rust, a modern system language.
+Rust's memory ownership semantics, enforced at compile time, allow them to implement most operation in a safe and zero-copy way.
+They observe impressive speedups, especially when chaining dataplanes: up to 7x throughput gains compared to container isolation.
 
 \section{Consensus in the network}
+
+As the industry moves to \gls{sdn} inside datacenter, programmable switches become more available and targetting them for application logic becomes reasonable.
+Several projects tried to implement Paxos rounds as part of the network to achieve better performance than userland implementations.
+Dang \etal wrote a P4 implementation of the Paxos leader and acceptor roles\cite{paxos_switchy}, while the clients (proposers and learners) are still implemented on commodity servers.
+They do not provide a benchmark of their work, which is centered on implementation strategies.
+In particular, they implemented standard Paxos, but note that Fast Paxos or Speculative Paxos could be applicable here.
+
+Jialin \etal propose a new networking primitive, \gls{oum}, which guarantees that all nodes in the multicast group who receive the packets will do in the same order\cite{nopaxos}.
+However, \gls{oum} does not guarantee packet delivery; some nodes might lose packets, which will create a gap in their log.
+\Gls{oum} is implemented by using \gls{sdn} rules to route all traffic to the multicast group through a single programmable switch, which acts like an ordering point and writes a sequence number into packets.
+NOPaxos uses the ordering provided by \gls{oum} when there is no packet drop and fall back to classic Paxos in case of packet loss.
+The author observe performance very close to an unreplicated system, but note that implementing \gls{oum} in a programmable switch rather than a software middlebox could close the gap even further.
+
+Another challenge where replication could be useful is in storage.
+Recently, \gls{scm} became available, offering ultra low latencies and high throughput.
+However, they come with a unique set of challenges, in particular they are prone to storage cell wear, making them less reliable than conventional storage.
+
+To fix this reliability issue, one option would be to use a replicated set of memories.
+As the problem of writing and reading to memory atomically is less general than a replicated log, a simpler, more efficient algorithm called ABD\cite{abd} can be used.
+A demo was implement using Linux on the client side and FPGAs on the server side\cite{consensus_memory}.
+Their implementation was able to read a replicated cache line in about \SI{18}{\micro\second} vs about \SI{3}{\micro\second} for one stored in local RAM.
