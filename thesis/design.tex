@@ -10,7 +10,7 @@ In addition to this, Paxos is known to be hard to understand, and even more to i
 Most of its users rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
 This means modifying the consensus protocol for our application and chosent transport could be hard to do
 
-Fortunately for us, a simpler alternative to Paxos called Raft was recently introduce\cite{raft}.
+Fortunately for us, a simpler alternative to Paxos called Raft was recently introduced\cite{raft}.
 Raft was designed from the ground up to be simpler by cleanly separating the different parts of the problem.
 It also provides a complete solution, unlike Paxos which often requires additional, unproven extension\cite{paxoslive}.
 
@@ -26,7 +26,7 @@ The resulting implementation is pretty small, at about 1000 lines of C++ code.
 \section{Modifications to R2P2}
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.6\textwidth]{r2p2_header}
     \caption{\gls{r2p2} header format\cite{r2p2}}

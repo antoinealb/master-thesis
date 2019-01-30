@@ -35,10 +35,10 @@ Raft\cite{raft} is a protocol that proposes a solution to the distributed consen
 Its main goal is to be easy to understand while still being efficient.
 It achieves its objective by cleanly separating different concerns of the protocol.
 It also provides a strong leader, \ie all entries flow from the leader to the followers, making it simpler to reason about.
-Unlike the original Paxos, Raft provides a complete solution to build a replicated log.
+Unlike the original Paxos\cite{paxos}, Raft provides a complete solution to build a replicated log.
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{replicated_log}
     \caption{Example asynchronous operations for a simple key value store supporting atomic compare and swap operation.
@@ -124,7 +124,7 @@ To avoid conflicting elections where no majority can occur, the timeout duration
 This procedure is summarized in Figure~\ref{fig:raft-leader-election}.
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{raft_states.pdf}
     \caption{Raft node state machines showing leader election logic.

@@ -116,7 +116,7 @@ Therefore, direct performance comparison might not be very accurate.
 In particular, their node's CPU is much older than ours (2008 vs 2012).
 
 The most interesting result is the latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}.
-We compare this with our \SI{1}{\micro\second} synthetic workload, which is closer to the kernel paxos case (which does not do any computation on the chosen values).
+We compare this with our \SI{1}{\micro\second} synthetic workload, which is closer to the Kernel Paxos case (which does not do any computation on the chosen values).
 We achieve a median latency of \SI{31}{\micro\second}, despite a Paxos optimization called Fast Paxos\cite{lamport2006fast}.
 In Fast Paxos, clients can bypass the leader, saving one network hop.
 

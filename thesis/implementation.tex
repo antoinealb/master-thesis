@@ -5,7 +5,7 @@
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{system_layers}
+    \includegraphics[width=0.3\textwidth]{system_layers}
     \caption{View of the different layers in the system architecture.
     \label{fig:architecture}
     }
@@ -21,7 +21,7 @@ It also handles the logic of replying to a given request, as well as some acknow
 This layer also provides networked I/O to the Raft implementation.
 
 The \gls{r2p2} layer will in turn make calls into DPDK and Linux for various functionalities.
-We must emphasize that all the ``hot path'' operations are done through DPDK, as calling into Linux is too slow for our purposes.
+We must emphasize that all data plane operations are done through DPDK, as calling into Linux is too slow for our purposes.
 Not shown here is also a small \gls{udp}/IP stack, with support for auxiliary features like the \gls{arp}.
 
 
@@ -78,7 +78,7 @@ However, simply using threadsafe queues would not have been enough.
 The overhead from mutexes can be quite important, reducing total throughput.
 The chosen approach is to use lockless queues, in which one reader thread can access the tail pointer, and one writer thread can access the head pointer.
 Since the pointers are not written by both threads and can only move in one direction (head cannot move back), it is safe to share the data structure without synchronization.
-We used an existing high performance implementation\cite{fast_queue}, as writing such data structures is error-prone and out of the scope of this thesis.
+We used an existing high performance implementation\cite{fast_queue}, as writing such data structures is error-prone and out of the scope of this work.
 
 One downside of the current approach is that requests in the leader node are still executed by the main/network thread.
 This was done to avoid copying reponse data from one thread to another.

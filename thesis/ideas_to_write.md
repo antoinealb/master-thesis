@@ -68,13 +68,13 @@ key themes:
 1. [done] Add consensus somehow in the title
 2. Add an abstract
     Write it at the end
-3. The intro should be longer and serve as an overview of what is coming next. Mention r2p2, mention some killer numbers from the eval etc.
+3. [done] The intro should be longer and serve as an overview of what is coming next. Mention r2p2, mention some killer numbers from the eval etc.
     Should really be high level overview, can be a repetition from a detailed stuff later.
-4. Design: Consider adding a table with the necessary message types or policies that you added. They are in the text but it would be clearer if they are in a table too.
+4. [done] Design: Consider adding a table with the necessary message types or policies that you added. They are in the text but it would be clearer if they are in a table too.
     Add the encoding as well (no need for byte level or stuff like that).
 5. [done] I think you need a state machine that combines the r2p2 server state machine with what you added for consensus. For example, what happens with multi-packet requests?
     Just mention that arrwos in Figure 3.2 (lifecycle) are complete R2P2 messages, which means in multi datagrams we wait for a request to be complete before replicating it.
-6. Remove Rust from the implementation section. I expect the section to be a bit longer as well. Mention lines of code added, where you added that code etc.
+6. [done] Remove Rust from the implementation section. I expect the section to be a bit longer as well. Mention lines of code added, where you added that code etc.
 7. Add a related work section. I can send you a few papers that you can cite as well.
 8. [done] In the implementation as well, add a "layers" view from DPDK all the way to the application.
     Put it at the beginning of the implementation chapter.

@@ -6,7 +6,7 @@ The current implementation only stores requests in memory.
 This means that requests are not truly persistent: if all nodes were to come offline, committed data would be lost.
 To avoid this, the replicated log would need to be persisted to non volatile storage.
 
-However our application cannot use the standard Linux filesystem \gls{api}.due to the latency of syscalls.
+However our application cannot use the standard Linux filesystem \gls{api} due its latency cost.
 Recently new technologies have emerged to use persistent storage (particularly \glspl{ssd}) without relying on the kernel.
 One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techniques and presents an \gls{api} similar to DPDK.
 Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO.
@@ -33,7 +33,7 @@ Jepsen\cite{jepsen} is an automated tool for checking of consistency properties 
 It works by randomly applying partitions, delays and packet reordering to distributed applications.
 So far it sucessfuly analyzed and found issues in major projects such as MongoDB, etcd, or Redis.
 We think we would gain a lot of confidence in the soundness of our implementation if a Jepsen testbench was available for it.
-It could be written using \gls{r2p2} as its only interface, so that the same test suite could be shared between many different \gls{r2p2} implementations.
+It could be written using \gls{r2p2} as its only interface, so that the same test suite could be shared between different implementations.
 
 \section{Cluster membership change}
 
@@ -47,8 +47,8 @@ Then two differente leaders could lead to two different values being accepted, w
 In order to avoid this, a new mechanism is introduced called \emph{join consensus}, where all majority agreements (entry commit and leader election) must be reached both in the old and new quorums.
 A catch-up phase is also needed, in which new cluster members are downloading entries from the leader and do not take part in the vote process.
 
-This was kept out of this work because it was not needed to prove that moving the replication in the transport was required.
-However, it would be a very interesting extension from an operational point of view.
+This was kept out of this work because it was not needed to prove that moving replication in the transport worked.
+However, it would be a very useful extension for real-life deployements.
 All the required details can be found in Section~6 of the Raft paper\cite[p.~10]{raft}.
 
 
