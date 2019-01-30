@@ -421,6 +421,24 @@ That means that no CPU cores can be idle if there is still packets to be process
 It does so by having three layers: networking, shuffle (which allows task stealing by other CPUs), and finally application execution layer
 Note that the shuffle queue stops the run to completion model: packets can be queued instead of immediately being processed.
 
+##Arrakis
+
+Similar to IX; uses virtualization extensions to provide application isolation.
+Provides two APIs: POSIX and native, used to show that POSIX is a bad fit for modern day environments.
+The POSIX compatibility layer has a throughput of half the native interface on udp echo.
+
+Big challenge: completely remove the kernel from i/o space without compromising on security.
+
+##NOPaxos
+
+* new primitive: ordered unreliable multicast. What if the network could provide totally ordered broadcast ?
+* all receivers received messages in the same order, but some message may be lost
+* implemented by passing all OUM messages through a sequencer by tweaking routing rules
+* sequencer writes a sequencer number in packet header
+* requires both specialized network (SDN with custom controller) and sequencers (programmable switches for example)
+* one round trip latency from clients to replicas, unless there is packet drop
+* reach 4x time throughput of standard paxos
+
 
 #Notes on the queue bug
 
