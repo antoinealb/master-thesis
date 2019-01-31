@@ -38,8 +38,14 @@ def raft5():
     env.raft_peers = [7, 16, 12, 18, 20]
 
 def run_raft():
+    if "20" in env.host_string: # leader is always 20 and alway on branch antoinealb
+        core_mask = 1
+    else:
+        core_mask = 1 # antoinealb branch
+        # core_mask = 3 # antoinealb worker thread
+
     peer_args = ["-p 10.90.44.2{peer:02d}:8000:{peer}".format(peer=peer) for peer in _get_peers()]
-    cmd = 'netstack/netstack/apps/r2p2-server-dpdk -c 0x03 -m 2048 -- -i {} '.format(_get_node_id())
+    cmd = 'netstack/netstack/apps/r2p2-server-dpdk -c 0x{} -m 2048 -- -i {} '.format(core_mask, _get_node_id())
     cmd = cmd + " ".join(peer_args)
 
     with cd('~/antoinealb/rpchol/build'):
@@ -100,6 +106,11 @@ def unittest():
 
 def uname():
     run('uname -a')
+
+def fetch():
+    with shell_env(GIT_SSH_COMMAND='ssh -i ~/antoinealb/github_deploy_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'):
+        with cd('~/antoinealb/rpchol'):
+            run('git fetch')
 
 def prepare():
     run('mkdir -p ~/antoinealb')
