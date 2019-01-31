@@ -1,3 +1,22 @@
 \chapter{Conclusion}
-TBD
-%TODO
+
+We presented an extension to the \gls{r2p2} transport protocol that offers reliable, in-order, delivery of messages to application.
+Our implementation uses well-known techniques like kernel bypass to offer both low tail latencies and high throughput.
+We validated our design by running it against a series of microbenchmarks simulating different application workloads.
+We observe an additional tail latency of only \SI{13}{\micro\second} compared to the unreplicated case.
+On the throughput side, we only lose 13\% at a given \gls{slo}.
+This shows that our original idea, moving consensus to the transport layer, can be both a general and high-performance tool for the distributed application developer. 
+
+One key finding from this work is that latency of follower nodes matter a lot.
+This means that application code should run on a separate thread on followers, to ensure the network code is not waiting on slow application requests.
+We observed a 2x throughput gain when implementing this separation of threads.
+
+We believe that moving the consensus to the transport layer is the way to go for easy development of distributed applications.
+However, before this solution can be used, there are some challenging issues to solve.
+In particular, log compaction and persistent storage must be implemented to ensure true reliable consensus.
+This could be a good extension to this project for a future master thesis.
+
+\section*{Acknowledgements}
+
+I would like to thank Marios Kogias for his help during all phases of this project.
+Thank you also to the whole DCSL/VLSC team for the interesting lunch time discussion and teachings.
