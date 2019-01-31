@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--legend", "-l", action='append', help='Legend, one per data file')
     parser.add_argument("--output", "-o", help='Name of the output figure filename')
     parser.add_argument("--ymax", "-y", help='Max latency on Y coordinate.', default=200, type=int)
+    parser.add_argument("--marker", "-m", action='append', help='Matplotlib marker, e.g.: v--')
 
     return parser.parse_args()
 
@@ -30,9 +31,7 @@ def plot_file(f, markers):
 def main():
     args = parse_args()
 
-    markers = ['x-', 'o-', 'v-']
-
-    for f, marker in zip(args.data, markers):
+    for f, marker in zip(args.data, args.marker):
         plot_file(f, marker)
 
     plt.xlabel('Throughput (1000 of requests per second)')

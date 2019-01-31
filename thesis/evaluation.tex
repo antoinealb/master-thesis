@@ -39,16 +39,16 @@ The result can be seen on Figure~\ref{fig:latency-throughput}.
 \begin{figure}[p]
     \centering
     \begin{subfigure}[t]{0.8\textwidth}
-        \includegraphics[width=\textwidth]{plots/latency_10us_synthetic}
-        \caption{\SI{10}{\micro\second} work}
+        \includegraphics[width=\textwidth]{plots/latency_10us_synthetic.pdf}
+        \caption{\SI{10}{\micro\second} synthetic workload}
     \end{subfigure}
 
     \begin{subfigure}[t]{0.8\textwidth}
-        \includegraphics[width=\textwidth]{plots/latency_0us_synthetic}
-        \caption{\SI{0}{\micro\second} work (echo server)}
+        \includegraphics[width=\textwidth]{plots/latency_1us_synthetic.pdf}
+        \caption{\SI{1}{\micro\second} synthetic workload}
     \end{subfigure}
     \caption{
-        Throughput of the system under both a \SI{10}{\micro\second} artificial processing load and without any processing time.
+        Throughput of the system both with followers executing application code both in the network thread and in a separate thread. 
         \label{fig:latency-throughput}
     }
 \end{figure}
@@ -70,11 +70,21 @@ Throughput will go down, as adding replicas will increase the number of messages
 It should also increase tail latency, but not by much, as we must wait on a bigger quorum of machines.
 The results can be see on Figure~\ref{fig:cluster-size}.
 
-\begin{figure}
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.8\textwidth]{plots/cluster_size}
+    \begin{subfigure}[t]{0.8\textwidth}
+        \includegraphics[width=\textwidth]{plots/cluster_size_1us}
+        \caption{\SI{1}{\micro\second} synthetic workload}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.8\textwidth}
+        \includegraphics[width=\textwidth]{plots/cluster_size_10us}
+        \caption{\SI{10}{\micro\second} synthetic workload}
+    \end{subfigure}
+
+
     \caption{Impact of quorum size on system performance.
-        This was ran using a \SI{1}{\micro\second} synthetic workload.
+        This experiment was performed using the worker thread implementation.
     \label{fig:cluster-size}
     }
 \end{figure}
