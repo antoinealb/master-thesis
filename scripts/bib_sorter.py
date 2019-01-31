@@ -141,7 +141,7 @@ def main():
     # We keep uncited keys sorted so that this program is a stable sort
     uncited_keys = sorted(set(bibliography.keys()) - set(citation_keys))
 
-    logging.info("%d unsorted keys", len(uncited_keys))
+    logging.info("%d unused keys: %s", len(uncited_keys), ", ".join(uncited_keys))
 
     for k in citation_keys + uncited_keys:
         args.output.write("".join(bibliography[k]))
