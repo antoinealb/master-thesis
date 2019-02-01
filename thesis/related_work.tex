@@ -6,7 +6,7 @@
 Over recent years, several alternatives have been suggested, based on the increased scaling difficulty of existing protocols.
 
 eRPC\cite{erpc} is a novel \gls{rpc} protocol for datacenter applications.
-Like \gls{r2p2}, it can be deployed on conventional Ethernet/IP fabrics for conventional network compatibility.
+Like \gls{r2p2}, it can be deployed on conventional Ethernet/IP fabrics for existing network compatibility.
 However, it can also be deployed on lossless fabrics like Infiniband, which might become more relevant in future datacenter designs.
 Their design provides end to end flow control (like TCP) by using credits on the sender side: each sender spends one credit when sending a packet, and gets one back when receiving one packet.
 eRPC also provide congestion control, but optimizes for the common case of an uncongested network.
@@ -57,7 +57,7 @@ In particular, they implemented standard Paxos, but note that Fast Paxos or Spec
 
 Jialin \etal propose a new networking primitive, \gls{oum}, which guarantees that all nodes in the multicast group who receive the packets will do in the same order\cite{nopaxos}.
 However, \gls{oum} does not guarantee packet delivery; some nodes might lose packets, which will create a gap in their log.
-\Gls{oum} is implemented by using \gls{sdn} rules to route all traffic to the multicast group through a single programmable switch, which acts like an ordering point and writes a sequence number into packets.
+\Gls{oum} is implemented using \gls{sdn} rules to route all traffic to the multicast group through a single programmable switch, which acts like an ordering point and writes a sequence number into packets.
 NOPaxos uses the ordering provided by \gls{oum} when there is no packet drop and fall back to classic Paxos in case of packet loss.
 The author observe performance very close to an unreplicated system, but note that implementing \gls{oum} in a programmable switch rather than a software middlebox could close the gap even further.
 

@@ -88,3 +88,5 @@ Take that from bibliography.
 Compare my work to other people's.
 
 to add: appendix with how to run my code
+
+maybe: add a conclusion to each chapter ? that bridges to the next chapter

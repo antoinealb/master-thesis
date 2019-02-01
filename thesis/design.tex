@@ -4,22 +4,22 @@
 \section{Choice of a consensus protocol}
 
 One of the earliest solution to the consensus problem is Lamport's Paxos algorithm\cite{paxos}.
-It is currently widely used, for example Google relies on it a lot to ensure correctness of its distributed systems\cite{chubby, paxoslive}.
+It is currently widely used, for example Google relies on it to ensure correctness of its distributed systems\cite{chubby, paxoslive}.
 However, Paxos has two issues: first, it only solves part of the problem; some other ``bricks'' must be added to it to form a complete system.
-In addition to this, Paxos is known to be hard to understand, and even more to implement correctly.
+In addition to this, Paxos is known to be hard to understand, and even harder to implement correctly.
 Most of its users rely on pre-existing implementations such as libpaxos\footnote{\url{https://bitbucket.org/sciascid/libpaxos/}}.
-This means modifying the consensus protocol for our application and chosent transport could be hard to do
+This means modifying the consensus protocol for our application and chosen transport could be hard to do
 
 Fortunately for us, a simpler alternative to Paxos called Raft was recently introduced\cite{raft}.
 Raft was designed from the ground up to be simpler by cleanly separating the different parts of the problem.
-It also provides a complete solution, unlike Paxos which often requires additional, unproven extension\cite{paxoslive}.
+It also provides a complete solution, unlike Paxos which often requires additional, unproven extensions\cite{paxoslive}.
 
-Another possible choice would have been ZooKeeper's ZAB\cite{zookeeper}, but was not as well documented as Raft.
+Another possible choice would have been ZooKeeper's ZAB\cite{zookeeper}, but it was not as well documented as Raft.
 In addition, it appeared to provide primitives that were less general purposes than a replicated log.
 
 Despite the availability of excellent production grade Raft implementations, we decided to implement our own.
 Most existing Raft implementations are using high level languages such as Go, which are not suited for low latency programming.
-Other implementations in C or C++ make a lot of hypothesis on the underlying platform.
+Other implementations in C or C++ make a lot of assumptions on the underlying platform.
 For all those reasons, it was deemed easier to do it ourself, using experience gathered by doing a prototype in Python.
 The resulting implementation is pretty small, at about 1000 lines of C++ code.
 
@@ -34,7 +34,7 @@ The resulting implementation is pretty small, at about 1000 lines of C++ code.
 \end{figure}
 
 
-Fortunately for us, \gls{r2p2} requests have a \emph{Policy} field to indicate to load balancers how this request should handled (Figure~\ref{fig:r2p2-header}).
+\Gls{r2p2} requests have a \emph{Policy} field to indicate to load balancers how this request should handled (Figure~\ref{fig:r2p2-header}).
 The pre-existing policies were \texttt{LB\_ROUTE} (can be redirected to any backend) or \texttt{FIXED\_ROUTE} (the request should really be handled by the destination backend).
 We added the \texttt{REPLICATED\_ROUTE} policy: all the backends will eventually receive this request.
 In addition, all backends are guaranteed to receive the requests using this policy in the same order.

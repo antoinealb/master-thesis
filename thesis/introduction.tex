@@ -3,19 +3,19 @@
 Since the introduction of computing systems, the amount of data to process have steadily increased.
 Historically, companies used larger and larger servers to cope with the increasing load.
 In recent years however, it became clear that switching to large amount of unreliable, commodity servers was the most economical solution.
-Not only was the hardware for this approach cheaper, it also helped with avaibility.
+Not only was the hardware for this approach cheaper, it also helped with availability.
 If a server component had to be replaced, it could simply be taken offline while the rest of the server handled requests.
 
 Unfortunately, switching to this distributed model of computation also created new problems.
-The biggest of all was the issue of data consistency: ensuring that node A and B had the same view of the world proved difficult.
+The biggest of all was the one of data consistency: ensuring that node A and B had the same view of the world proved difficult.
 And when the network or machines in it are not reliable, it only becomes more difficult.
 This is called the \emph{distributed consensus problem} and algorithms to solve it are part of almost any modern large scale system.
 
 Traditionally, consensus algorithms have been part of the application layer and run on top of existing transport protocols.
-While this is easier to implement, it also means each distributed application must re-implement the consensus protocol which is hard to get right.
+While this is easier to implement, it also means each distributed application must re-implement the consensus logic which is hard to get right.
 Imagine if each application had its own implementation of reliable, in-order transport?
 
-From this observation, we decided to implement the consensus protocol at the transport layer.
+From this observation, we decided to implement consensus at the transport layer.
 This means each application gets the possibility to become distributed ``for free''.
 We implemented this as part of our \gls{rpc} oriented transport, which runs on top of UDP.
 
@@ -24,9 +24,9 @@ This protocol was created specially with the goal of handling traffic inside dat
 It embeds load balancing inside the protocol, providing different routing policies optimized for different load balancing methods.
 We added a new method called ``replicated route'', in which all nodes are guaranteed to receive the same message and in the same order (at the application level).
 
-Our implementation can run either on top of normal UDP sockets or using custom userland networking on top of DPDK.
-While the former makes local development easier, the latter allows for really high throughput and low latency by minimizing context switch overhead.
-We were able to get up to 500'000 messages per second on our test cluster, with 99th percentile latency as low as \SI{30}{\micro\second}.
+Our implementation can run either on top of UDP sockets or using custom userland networking on top of DPDK.
+While the former makes local development easier, the latter allows for high throughput and low latency by minimizing context switch overhead.
+We were able to get up to 275'000 messages per second on our test cluster, with 99th percentile latency as low as \SI{30}{\micro\second}.
 
 We also observed the effect of application workload on the performance of the consensus algorithm.
 In particular, we show that executing workloads in the networking thread on the replicas can lead to important losses of throughput.

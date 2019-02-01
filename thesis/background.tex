@@ -7,7 +7,7 @@
 % somehow need to be reliable in the face of such problems
 When scaling out to large number of nodes, the likelihood of a node failing increases.
 Therefore, we would like the aggregate system to stay operational despite the failures of individual nodes.
-A very useful primitive to reach this property is called \emph{distributed consensus}, which provides the cluster with a way to agree on a value, despite individual failures.
+A very useful primitive to reach this property is called \emph{distributed consensus}, which provides the cluster with a way to agree on a value despite individual failures.
 
 This primitive can then be extended using asynchronous state machine replication.
 In this model, the values are instructions executed by a state machine running on each node.
@@ -18,16 +18,16 @@ However, once a value was chosen by the cluster, we know for sure that this valu
 In other words, it is not possible for a node to change already-made decisions. 
 
 Typical replication protocols provide $2n + 1$ replication, meaning a cluster can stay alive as long as a majority of nodes is alive.
-For example, if there is 5 nodes in the cluster, up to two could go offline without impacting the availability or the consistency of the data.
+For example, if there are 5 nodes in the cluster, up to two could go offline without impacting the availability or the consistency of the data.
 While it might seem like a good idea to make extremely large clusters, each additional node will increase the network load.
-A trade off between reliability must, again, be made here.
+A trade off between reliability and performance must, again, be made here.
 
 An important restriction to make is the type of node failures that we are concerned with.
 We will be using the \emph{non-byzantine} model of failures\cite{paxos_made_simple}, in which the following properties hold.
 First, nodes may fail by stopping, and may restart (note that this requires persistent storage in case all nodes die).
 In particular, nodes are assumed to be non-malicious and non-bogus.
-Then, messages can be re-ordered, can be duplicated, lost or delayed, but they cannot be corrupted.
-Dealing with those types of failure (especially malicious nodes) require a different set of algorithms, with much less performance.
+Messages can be re-ordered, can be duplicated, lost or delayed, but they cannot be corrupted.
+Dealing with those types of failure (especially malicious nodes) require a different set of algorithms, with significantly less performance.
 
 \subsection{Raft Consensus Protocol}
 
@@ -35,7 +35,7 @@ Raft\cite{raft} is a protocol that proposes a solution to the distributed consen
 Its main goal is to be easy to understand while still being efficient.
 It achieves its objective by cleanly separating different concerns of the protocol.
 It also provides a strong leader, \ie all entries flow from the leader to the followers, making it simpler to reason about.
-Unlike the original Paxos\cite{paxos}, Raft provides a complete solution to build a replicated log.
+Unlike the original Paxos\cite{paxos}, Raft provides a complete solution to build a replicated state machine.
 
 
 \begin{figure}
@@ -61,11 +61,11 @@ Each node can be in one of three states: \emph{follower}, \emph{candidate} or \e
 During normal operation (when a leader emerged), a cluster contains exactly one leader and zero candidates.
 We will start by assuming that everything is normal to explain how the protocol works, then explain what changes during leader election.
 
-But before we must introduce an important Raft concept called the \emph{term}.
+But first, we must introduce an important Raft concept called the \emph{term}.
 One term is defined as a period of time in which there is at most one leader.
 This means that in order to change the leader, a new term must be changed.
 Terms are identified by their term number, which always increases.
-Note that not all terms have leader, for example if no leader could be elected, the term number is increased before starting a new round of elections.
+Note that not all terms have leader, for example if no leader could be elected, the term number is incremented before starting a new round of elections.
 
 \subsection{Log Replication}
 
@@ -179,7 +179,7 @@ In addition to this, TCP connection tracking requires requires a lot of messages
 
 Most current \gls{rpc} systems, such as Google's gRPC\cite{grpc} or Facebook's Thrift\cite{thrift} typically use TCP as their transport layer.
 In order to address TCP's shortcomings, the \gls{dcsl} developped a new transport protocol specially designed for \glspl{rpc}.
-Unlike TCP, this new protocol is connectionless; each communication is made of a single request followed by a single response, hence the name of \gls{r2p2}.
+Unlike TCP, this new protocol is connectionless; each communication is made of a single request followed by a single response, hence the name of \glsfirst{r2p2}.
 This reduces latency by removing the handshake \gls{rtt} of TCP.
 
 \Gls{r2p2} has been succesfully used in the past to implement new load balancing techniques\cite{r2p2}.
@@ -223,7 +223,7 @@ The core of the \gls{r2p2} \gls{api} can be seen in Listing~\ref{listing:r2p2-cl
 Such event-oriented \gls{api} maps well to the semantics of either high performance I/O syscalls (\eg Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
 
 \begin{lstfloat}
-\lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} \gls{api} summary}]{code_snippets/r2p2_client_api.c}
+\lstinputlisting[label=listing:r2p2-client-api,caption={\gls{r2p2} client \gls{api} summary}]{code_snippets/r2p2_client_api.c}
 \end{lstfloat}
 
 \begin{lstfloat}
@@ -231,13 +231,13 @@ Such event-oriented \gls{api} maps well to the semantics of either high performa
 \end{lstfloat}
 
 With our proposal of bringing the consensus protocol to the transport layer, switching a normal application to a distributed, consistent one is simply a matter of changing the \texttt{routing\_policy} field from \texttt{FIXED\_ROUTE} to \texttt{REPLICATED\_ROUTE}.
-We hope that this will create a re-usable framework and that more developper will be able to write fault tolerant systems as a result.
+We hope that this will create a reusable framework and that more developers will be able to write fault tolerant systems as a result.
 
 \section{Kernel Bypass}
 
-Due to the way time sharing operating system work, switching between userland and kernel code, or between two userland tasks is expensive: about \SIrange{1}{2}{\micro\second}\cite{measuring_context_switch}).
-This is due to the need of saving the whole original execution context first, and then loading or restoring the new execution context.
-Since every system call switches to kernel code, high performance code can be severly limited by the amount of syscall it is doing.
+Due to the way time sharing operating systems work, switching between userland and kernel code, or between two userland tasks is expensive: about \SIrange{1}{2}{\micro\second}\cite{measuring_context_switch}).
+This is due to the need of saving the whole original execution context first, and then loading the new execution context.
+Since every system call switches to kernel code, high performance applications can be severly limited by the amount of syscall it is doing.
 For example, assume that a simple packet forwarding application running on Linux uses one syscall to read a packet, and another syscall to write it again.
 This means up to \SI{4}{\micro\second} of context switching per packet, restricting performance to about \SI{250}{\kilo packet\per\second}.
 
@@ -246,27 +246,27 @@ Interrupts are a way for a peripheral, such as a \gls{nic}, to notify the main p
 They allow the processor to avoid checking the presence of processing tasks needlessly, saving computational power and energy.
 However, they are also quite slow to be processed, increasing latency.
 In high packet rate applications, a processor can safely assume that a packet will always be available, or just check again if this is not the case.
-The loss in energy or power is quite low, and the gain in throughput and latency significant.
+The loss in energy or computing power is quite low, and the gain in throughput and latency significant.
 By removing context switches and interrupts, Google observed a 3x gain in throughput in their load balancers\cite{maglev}.
 
 To reduce the number of switches between kernel space and userland, we have two choices.
 The first would be to move moving more parts of the system in the kernel, while the second moves more parts of the system to userland.
 The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
-This technique is very efficient in terms of developper efforts; by using the kernel-provided facilities, engineers gain access to a high-quality implementation shared by many users.
+This technique is very efficient in terms of developer efforts; by using the kernel-provided facilities, engineers gain access to a high-quality implementation shared by many users.
 However, moving application-specific code in kernel space is not an easy task.
 This is due to the usual challenges of kernel development: very little memory protection, lack of debugging tools, possibility to crash the development machine if testing on it, \etc
 The lack of memory protection for kernel code also opens the door to security vulnerabilities, which can be pretty severe when processing network traffic.
 While modern operating systems offer security features to mitigate this risk\cite{kernel_self_protection}, writing correct kernel code is still a difficult exercise.
-This is made even more difficult by the fact that Linux's internal \gls{api} are considered unstable by developpers.
+This is made even more difficult by the fact that Linux's internal \gls{api} are considered unstable by developers.
 This means that applications may break as kernel gets updated, making maintenance more expensive than expected.
 
-For all these reasons, modern high performance systems tend to move more, if not all, of the processing application in userland, as part of the application.
+For all these reasons, modern high performance systems tend to move more, if not all, of the stack in userland, as part of the application.
 This technique is known as \emph{kernel bypass}, because it bypasses the kernel to talk to the underlying hardware directly.
 In this approach, the application embeds everything it needs, from \gls{nic} drivers to TCP.
 While writing a \gls{nic} driver might seem like a waste of developer's time, one generally uses framework and libraries to implement this functionality.
-The main downside of \emph{kernel bypass} is that it prevents sharing of ressources between applications running on the server.
+The main downside of kernel bypass is that it prevents sharing of ressources between applications running on the server.
 For example, each networked application would need its own \gls{nic}, which can be an issue in a commercial cloud environment.
-It is also more complicated to develop, and therefore reserved for performance sensitive applications. 
+It is also more complicated to develop, and therefore reserved for performance sensitive applications.
 
 A key contribution of our work is the use of kernel bypass techniques to reduce latency.
 In particular, we are opposing our design to Kernel Paxos\cite{kernelpaxos}, which moved the Paxos consensus protocol in the Linux kernel with great results.

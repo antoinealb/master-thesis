@@ -7,22 +7,17 @@ Throughput is defined as the number of messages than can be succesfully replicat
 Latency is the time between the sending of a request and the reception of the reply (measured at the client).
 To generate the load and measure the latency, the Lancet distributed load generator\cite{lancet} was used.
 
-We designed three different experiments to explore how our system reacts to different conditions.
+We designed two different experiments to explore how our system reacts to different conditions.
 In the first experiment, we measure the latency of a replicated operation under different fixed throughputs.
 This will allow us to measure the peak throughput of the system, defined as the point at which the latency increases infinitely because requests are queued.
 This experiment was carried using a cluster of three nodes.
 
-In the second exeperiment, we measured the impact of cluster size on latency.
+In the second experiment, we measured the impact of cluster size on latency.
 Since the leader must wait for a bigger quorum of machines to acknowledge the request, we expect the latency to go up with the number of machines.
 We also include the case where there is only one machine in the group, \ie when non replicated requests are used.
-This was conducted at a fixed throughput.
-
-For the last experiment, we wanted to measure the impact of leader failure on the system's throughput.
-To do so, we modified the code of the server program to fall back to being a follower after a given number of messages was sent.
-A new leader election would then take place and the requests sent while the cluster was leaderless would be lost.
 
 All experiments were done on machines equipped with two Intel Xeon E5-2650 CPUs running at \SI{2.6}{\giga\hertz}.
-Each machine had \SI{64}{\giga\byte} of RAM, out of which \SI{2}{\giga\byte} were allocated for DPDK.
+Each machine had \SI{64}{\giga\byte} of RAM, out of which \SI{2}{\giga\byte} were allocated to DPDK.
 The machines were equipped with Intel~82599ES \glspl{nic} connected to a \SI{10}{\giga\bit\per\second} switch.
 All the server machines were running the kernel bypass implementation of the stack, while the client was running the userland one.
 
@@ -31,7 +26,7 @@ All the server machines were running the kernel bypass implementation of the sta
 
 In this experiment, we varied the load on the cluster and measured the 99th percentile latency of the requests.
 The idea here is that the latency graph should exhibit a large vertical asymptote as we reach the maximum capacity of the system. 
-To have a baseline performance, We also ran the same load test on a non-replicated cluster.
+To have a baseline performance, we also ran the same load test on a non-replicated cluster.
 
 This experiment was performed on a cluster of three machines.
 The result can be seen on Figure~\ref{fig:latency-throughput}.
@@ -126,9 +121,9 @@ Unfortunately we were not able to run it on our experimental setup.
 Therefore, direct performance comparison might not be very accurate.
 In particular, their node's CPU is much older than ours (2008 vs 2012).
 
-The most interesting result is the latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}.
+The most interesting result is latency: Kernel Paxos claims to have a median latency of \SI{52}{\micro\second}.
 We compare this with our \SI{1}{\micro\second} synthetic workload, which is closer to the Kernel Paxos case (which does not do any computation on the chosen values).
-We achieve a median latency of \SI{31}{\micro\second}, despite a Paxos optimization called Fast Paxos\cite{lamport2006fast}.
+We achieve a tail latency of \SI{31}{\micro\second}, despite a Paxos optimization called Fast Paxos\cite{lamport2006fast}.
 In Fast Paxos, clients can bypass the leader, saving one network hop.
 
 While Fast Paxos could be theoretically applied to our system, we decided not to for several reasons.
@@ -145,4 +140,4 @@ As they did not publish the model of their CPU for their \SI{10}{\giga\bit\per\s
 
 In terms of implementation complexity, Kernel Paxos is about 8800 lines of code.
 Our implementation is about half this size at 4300 lines.
-In order to keep the comparison meaningful, the userland UDP/IP stack is not accounted in those lines.
+In order to keep the comparison meaningful, the userland UDP/IP stack is not accounted in those counts.
