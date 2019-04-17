@@ -27,7 +27,7 @@ We will be using the \emph{non-byzantine} model of failures\cite{paxos_made_simp
 First, nodes may fail by stopping, and may restart (note that this requires persistent storage in case all nodes die).
 In particular, nodes are assumed to be non-malicious and non-bogus.
 Messages can be re-ordered, can be duplicated, lost or delayed, but they cannot be corrupted.
-Dealing with those types of failure (especially malicious nodes) require a different set of algorithms, with significantly less performance.
+Dealing with those types of failure (especially malicious nodes) require a different set of algorithms, with significantly more complexity and less performance.
 
 \subsection{Raft Consensus Protocol}
 
@@ -35,7 +35,7 @@ Raft\cite{raft} is a protocol that proposes a solution to the distributed consen
 Its main goal is to be easy to understand while still being efficient.
 It achieves its objective by cleanly separating different concerns of the protocol.
 It also provides a strong leader, \ie all entries flow from the leader to the followers, making it simpler to reason about.
-Unlike the original Paxos\cite{paxos}, Raft provides a complete solution to build a replicated state machine.
+Raft provides a complete solution to build a replicated state machine; the original Paxos\cite{paxos} only only provides agreement on a single value and requires an external leader election mechanism.
 
 
 \begin{figure}
@@ -56,10 +56,11 @@ Once an entry has been replicated on a majority of machines, Raft guarantees it 
 Such entries are called \emph{committed}.
 Raft log entries can be used as instruction to implement a replicated state machine.
 
-Raft can be split in three different parts: leader election, log entries replication and commit propagation.
+Raft can be split in three different parts: leader election, log entry replication and commit propagation.
 Each node can be in one of three states: \emph{follower}, \emph{candidate} or \emph{leader}.
 During normal operation (when a leader emerged), a cluster contains exactly one leader and zero candidates.
-We will start by assuming that everything is normal to explain how the protocol works, then explain what changes during leader election.
+To explain how the protocol works, we will start by examining the normal condition in which there is exactly one leader and it is operating properly.
+We will then explain what changes during leader election.
 
 But first, we must introduce an important Raft concept called the \emph{term}.
 One term is defined as a period of time in which there is at most one leader.
@@ -85,7 +86,7 @@ First, the two entries must store the same content.
 Then, all previous log entries are also matching between the two logs.
 Those consistency properties allow Raft to have a simpler entry committing mechanism.
 
-\subsection{Entries commit}
+\subsection{Log Entry commit}
 
 We say that an entry is \emph{committed} when we know for sure that this entry will never be lost by the cluster.
 We also know that a committed entry will eventually be replicated to the whole cluster.
@@ -145,14 +146,14 @@ The most important service is multiplexing; several application can use the netw
 This is done using port numbers.
 Historically, IP was used with two transport protocols: UDP and TCP.
 
-While UDP only provides connection multiplexing, TCP is much more complicated.
+While UDP is very simple and only distributes incoming packets to each application (via port numbers), TCP is much more complicated.
 It provides a stream interface, which guarantees that bytes that enter the connection will arrive in the same order at the other end (reliable delivery).
-In order to do so, TCP uses has to establish a connection and then acknowledge packets.
+In order to do so, TCP has to establish a connection and then acknowledge packets.
 It also provides congestion control functionality to avoid link saturation.
 
 All those features made TCP the logical choice when sending data on the Internet, which is pretty unreliable.
 However, when running inside a datacenter, packet loss or re-ordering is not as likely.
-In addition to this, TCP connection tracking requires requires a lot of messages to send some data, increasing latency (Figure~\ref{fig:tcp_lifecycle}).
+In addition to this, TCP requires multiple round trips to track connection states before being able to send application data, which increases latency (Figure~\ref{fig:tcp_lifecycle}).
 
 %
 % historical: tcp and udp
@@ -185,7 +186,7 @@ This reduces latency by removing the handshake \gls{rtt} of TCP.
 \Gls{r2p2} has been succesfully used in the past to implement new load balancing techniques\cite{r2p2}.
 Since it was designed with load balancing, each \gls{r2p2} request includes includes a field to specify how it should be routed.
 For example, it can be marked as ``Fixed'', meaning that the request must be served by the receiver, or ``load-balanced'', in which case the router is free to redirect it to another server.
-Since \gls{r2p2} has no notion of connections, the reply can be sent directly to the client instead of having an additional trip through the load balancer (Figure~\ref{fig:load_balancing}).
+\gls{r2p2} has no notion of connections, allowing the reply to be sent directly to the client instead of having an additional trip through the load balancer (Figure~\ref{fig:load_balancing}).
 
 \begin{figure}
     \centering
@@ -217,7 +218,7 @@ For example, if stales read from a key-value store are acceptable, read request 
 
 The \gls{r2p2} library \gls{api} looks nothing like a BSD socket \gls{api}.
 Instead it is \emph{event oriented}: the user of the library provides a set of callbacks that are called when a request is received (in the case of a server) or when a response arrives (in the case of a client).
-Those callbacks also receive a per-connection argument which can be used to track state.
+Those callbacks also receive a per-request argument which can be used to track state.
 The core of the \gls{r2p2} \gls{api} can be seen in Listing~\ref{listing:r2p2-client-api} and \ref{listing:r2p2-server-api}.
 
 Such event-oriented \gls{api} maps well to the semantics of either high performance I/O syscalls (\eg Linux's \texttt{epoll}) or the one of kernel bypass frameworks such as DPDK.
@@ -250,7 +251,7 @@ The loss in energy or computing power is quite low, and the gain in throughput a
 By removing context switches and interrupts, Google observed a 3x gain in throughput in their load balancers\cite{maglev}.
 
 To reduce the number of switches between kernel space and userland, we have two choices.
-The first would be to move moving more parts of the system in the kernel, while the second moves more parts of the system to userland.
+The first would be to move more parts of the application in the kernel, while the second moves more parts of the system to userland.
 The first option is the one that has been traditionnaly been used for networking; the TCP/IP stack or the filesystem are part of typical UNIX kernels.
 This technique is very efficient in terms of developer efforts; by using the kernel-provided facilities, engineers gain access to a high-quality implementation shared by many users.
 However, moving application-specific code in kernel space is not an easy task.
@@ -266,8 +267,8 @@ In this approach, the application embeds everything it needs, from \gls{nic} dri
 While writing a \gls{nic} driver might seem like a waste of developer's time, one generally uses framework and libraries to implement this functionality.
 The main downside of kernel bypass is that it prevents sharing of ressources between applications running on the server.
 For example, each networked application would need its own \gls{nic}, which can be an issue in a commercial cloud environment.
-It is also more complicated to develop, and therefore reserved for performance sensitive applications.
+While this can be mitigated using some virtualisation techniques like SR-IOV, kernel bypass software is also more complicated to develop, and therefore reserved for performance sensitive applications.
 
 A key contribution of our work is the use of kernel bypass techniques to reduce latency.
 In particular, we are opposing our design to Kernel Paxos\cite{kernelpaxos}, which moved the Paxos consensus protocol in the Linux kernel with great results.
-We believe that using kernel bypass techniques can lead to similar, if not better performance without compromising process separation.
+We believe that using kernel bypass techniques can lead to similar, if not better performance without compromising on the security benefit of process separation.

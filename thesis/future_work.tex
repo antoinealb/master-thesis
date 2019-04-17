@@ -9,7 +9,7 @@ To avoid this, the replicated log would need to be persisted to non volatile sto
 However our application cannot use the standard Linux filesystem \gls{api} due its latency cost.
 Recently new technologies have emerged to use persistent storage (particularly \glspl{ssd}) without relying on the kernel.
 One of those approach is Intel's SPDK\cite{spdk}, which uses kernel bypass techniques and presents an \gls{api} similar to DPDK.
-Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO.
+Another option would be to use the newly introduced Linux's \texttt{IOCTX\_FLAG\_SQTHREAD} flag for polled IO\cite{ioctx_flag_sqthread}.
 This works by submitting filesystem operations in a ring buffer, which will get collected and executed by the kernel later.
 
 \section{Max-latency batching}
@@ -21,6 +21,7 @@ The classic way to circumvent this problem is to batch requests before sending o
 The downside of naive batching like this is that it increases latency.
 An alternative might be to choose the batching period according to some \glspl{slo};
 if some requests are more latency-sensitive than others, the latency \gls{slo} could be included in the \gls{r2p2} header itself, allowing the server to take an informed batching decision.
+We could also implement adaptive batching, in which batching is only applied during congestion periods, minimizing the impact on latency, as done in the IX dataplane operating system\cite{ix}.
 
 
 \section{Consistency verification of the protocol}

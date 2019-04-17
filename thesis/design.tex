@@ -34,7 +34,7 @@ The resulting implementation is pretty small, at about 1000 lines of C++ code.
 \end{figure}
 
 
-\Gls{r2p2} requests have a \emph{Policy} field to indicate to load balancers how this request should handled (Figure~\ref{fig:r2p2-header}).
+\Gls{r2p2} request headers have a \emph{Policy} field to indicate to load balancers how this request should handled (Figure~\ref{fig:r2p2-header}).
 The pre-existing policies were \texttt{LB\_ROUTE} (can be redirected to any backend) or \texttt{FIXED\_ROUTE} (the request should really be handled by the destination backend).
 We added the \texttt{REPLICATED\_ROUTE} policy: all the backends will eventually receive this request.
 In addition, all backends are guaranteed to receive the requests using this policy in the same order.

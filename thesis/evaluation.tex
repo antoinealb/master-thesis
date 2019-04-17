@@ -3,12 +3,12 @@
 
 In this chapter, we measure the performance of our implementation.
 In particular, we will focus on two key characteristics: latency and throughput.
-Throughput is defined as the number of messages than can be succesfully replicated per second.
+Throughput is defined as the number of requests per second processed by the application.
 Latency is the time between the sending of a request and the reception of the reply (measured at the client).
 To generate the load and measure the latency, the Lancet distributed load generator\cite{lancet} was used.
 
 We designed two different experiments to explore how our system reacts to different conditions.
-In the first experiment, we measure the latency of a replicated operation under different fixed throughputs.
+In the first experiment, we measure the latency as a function of the achieved throughput.
 This will allow us to measure the peak throughput of the system, defined as the point at which the latency increases infinitely because requests are queued.
 This experiment was carried using a cluster of three nodes.
 
@@ -18,18 +18,16 @@ We also include the case where there is only one machine in the group, \ie when 
 
 All experiments were done on machines equipped with two Intel Xeon E5-2650 CPUs running at \SI{2.6}{\giga\hertz}.
 Each machine had \SI{64}{\giga\byte} of RAM, out of which \SI{2}{\giga\byte} were allocated to DPDK.
-The machines were equipped with Intel~82599ES \glspl{nic} connected to a \SI{10}{\giga\bit\per\second} switch.
+The machines were equipped with Intel~82599ES \SI{10}{\giga\bit\per\second} \glspl{nic} connected through a switch.
 All the server machines were running the kernel bypass implementation of the stack, while the client was running the userland one.
 
 \section{Latency - Throughput}
 \label{sec:latency_throughput}
 
-In this experiment, we varied the load on the cluster and measured the 99th percentile latency of the requests.
+In this experiment, we varied the load on a three machine cluster cluster and measured the 99th percentile latency of the requests.
 The idea here is that the latency graph should exhibit a large vertical asymptote as we reach the maximum capacity of the system. 
 To have a baseline performance, we also ran the same load test on a non-replicated cluster.
 
-This experiment was performed on a cluster of three machines.
-The result can be seen on Figure~\ref{fig:latency-throughput}.
 
 \begin{figure}[p]
     \centering
@@ -48,7 +46,7 @@ The result can be seen on Figure~\ref{fig:latency-throughput}.
     }
 \end{figure}
 
-This experiment clearly shows that the latency of replica acknowledgment matters a lot for this type of system.
+Figure~\ref{fig:latency-throughput} shows that the latency of replica acknowledgment matters a lot for this type of system.
 Running the synthetic workload in the network thread (in a symmetric design) has very bad performance.
 For example, at a \SI{200}{\micro\second} latency \gls{slo}, running the workload in a separate thread has twice the throughput of the same-thread implementation.
 This was not what we expected, and had to be retrofitted in the implementation.
@@ -67,16 +65,16 @@ The results can be see on Figure~\ref{fig:cluster-size}.
 
 \begin{figure}[p]
     \centering
-    \begin{subfigure}[t]{0.8\textwidth}
-        \includegraphics[width=\textwidth]{plots/cluster_size_1us}
-        \caption{\SI{1}{\micro\second} synthetic workload}
-    \end{subfigure}
 
     \begin{subfigure}[t]{0.8\textwidth}
         \includegraphics[width=\textwidth]{plots/cluster_size_10us}
         \caption{\SI{10}{\micro\second} synthetic workload}
     \end{subfigure}
 
+    \begin{subfigure}[t]{0.8\textwidth}
+        \includegraphics[width=\textwidth]{plots/cluster_size_1us}
+        \caption{\SI{1}{\micro\second} synthetic workload}
+    \end{subfigure}
 
     \caption{Impact of quorum size on system performance.
         This experiment was performed using the worker thread implementation.
@@ -133,7 +131,7 @@ This means that to handle $n$ failures, Fast Paxos requires $3n + 1$ replicas, w
 Note that if the $3n + 1$ replica conditions is not met, Fast Paxos will fall back to classic Paxos.
 Finally, under high loads, the probability of message collision is quite high, and in case of collisions the number of network hops in Fast Paxos is the same as with Classic Paxos or Raft.
 
-On the throughput side, Kernel Paxos claims \SI{175}{\kilo msg\per\second}, whereas our implementation reached \SI{275}{\kilo msg\per\second}, a $1.6x$ increase.
+On the throughput side, Kernel Paxos claims \SI{175}{\kilo msg\per\second}, whereas our implementation reached \SI{275}{\kilo msg\per\second} in a three machines cluster, a $1.6x$ increase.
 According to Kernel Paxos authors, their throughput is bound by CPU performance on the proposers.
 We were not able to verify this claim, as we were not able to run their implementation in our cluster.
 As they did not publish the model of their CPU for their \SI{10}{\giga\bit\per\second} experiments, a direct comparison is hard to do.

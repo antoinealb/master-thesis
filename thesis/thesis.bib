@@ -40,11 +40,10 @@
     year={2007}
 }
 
-@misc{r2p2,
+@unpublished{r2p2,
     title={{Tail-Latency-Tolerant Load Balancing of Microsecond-scale RPCs}},
     author={Kogias, Marios and Bugnion, Edouard},
-    year={2019},
-    notes={Unpublished at time of writing},
+    note = {Unpublished at time of writing}
 }
 
 @misc{measuring_context_switch,
@@ -136,7 +135,7 @@
     title = {{libuv}},
     key = {libuf},
     howpublished = {http://libuv.org/},
-    author = {The libuv team},
+    author = {{The libuv team}},
     year = {2013},
 }
 
@@ -169,6 +168,20 @@
     key = {SPDK},
     howpublished = {\url{https://spdk.io/}},
     organization = {Intel}
+}
+
+@misc{ioctx_flag_sqthread,
+  title = {{aio: enable polling for IOCTX\_FLAG\_SQTHREAD}},
+  author={Axboe, Jens},
+  year={2018},
+  howpublished={\url{https://patchwork.kernel.org/patch/10740953/}},
+}
+@inproceedings{ix,
+  title={{IX: A protected dataplane operating system for high throughput and low latency}},
+  author={Belay, Adam and Prekas, George and Klimovic, Ana and Grossman, Samuel and Kozyrakis, Christos and Bugnion, Edouard},
+  booktitle={Proceedings of the 11th USENIX Symposium on Operating System Design and Implementation (OSDI)},
+  year={2014},
+  organization={USENIX}
 }
 
 @misc{jepsen,
@@ -214,14 +227,6 @@
  publisher = {ACM},
  address = {New York, NY, USA},
  keywords = {data centers, low latency, network stacks, transport protocols},
-}
-
-@inproceedings{ix,
-  title={{IX: A protected dataplane operating system for high throughput and low latency}},
-  author={Belay, Adam and Prekas, George and Klimovic, Ana and Grossman, Samuel and Kozyrakis, Christos and Bugnion, Edouard},
-  booktitle={Proceedings of the 11th USENIX Symposium on Operating System Design and Implementation (OSDI)},
-  year={2014},
-  organization={USENIX}
 }
 
 @article{arrakis,
@@ -281,6 +286,7 @@
   year={1995},
   publisher={ACM}
 }
+
 @inproceedings{consensus_memory,
   title={Consensus for Non-Volatile Main Memory},
   author={Dang, Huynh Tu and Hofmann, Jaco and Liu, Yang and Radi, Marjan and Vucinic, Dejan and Soul{\'e}, Robert and Pedone, Fernando},
@@ -289,3 +295,4 @@
   year={2018},
   organization={IEEE}
 }
+

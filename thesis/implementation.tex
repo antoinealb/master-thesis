@@ -70,7 +70,7 @@ The data is stored into the circular buffer without copying; when an entry is ov
 
 \section{Worker threads}
 
-During evaluation of the original design, we discovered that executing the workloads in the main thread created a lot of queueing (see Section~\ref{sec:latency_throughput}).
+During evaluation of the original design, we discovered that executing the application code in the main thread created a lot of queueing (see Section~\ref{sec:latency_throughput}).
 Because of this, we decided to move the processing of the workloads off the main networking thread and into auxiliary workers.
 Data between the two is passed through queues.
 
@@ -86,7 +86,7 @@ However, it could cause some issues when a node transitions from follower to lea
 
 \section{DPDK backend}
 
-In order to provide the best performance, \gls{r2p2} implements kernel bypass technologies.
+In order to provide the best performance, \gls{r2p2} implements kernel bypass.
 In this mode, the application talks directly to a dedicated \gls{nic}, embedding the driver in the library code.
 
 For the implementation we opted to use Intel's DPDK framework.
@@ -109,7 +109,7 @@ This allows for a much easier development experience than running DPDK directly,
 
 The Raft algorithm relies a lot on timers to detect leader absence and organize elections.
 In order to implement this, we simply use the functions provided by DPDK and libuv.
-The port layer must only periodically call a function (\texttt{raft\_tick}).
+The backend (DPDK or Linux) must only periodically call a function (\texttt{raft\_tick}).
 This call is then used to process timeouts in various parts of the Raft implementation.
 
 \section{Modification to client libraries}

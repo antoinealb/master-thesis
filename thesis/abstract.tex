@@ -4,6 +4,7 @@
     We propose to move the consensus protocol in the transport layer, to offer reliable ordered delivery of messages to applications.
 
     Our implementation builds on R2P2, a novel RPC framework for datacenter applications.
-    It can run both using a Linux UDP socket or kernel bypass using DPDK.
+    It can run both using Linux UDP sockets or kernel bypass using DPDK.
     We observe tail latency increase of only \SI{10}{\micro\second} and a throughput loss of only 13\% compared to the unreplicated application, showing that easy-to-use consensus can also have high performance.
 \end{abstract}
+

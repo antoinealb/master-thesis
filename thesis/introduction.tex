@@ -2,7 +2,7 @@
 
 Since the introduction of computing systems, the amount of data to process have steadily increased.
 Historically, companies used larger and larger servers to cope with the increasing load.
-In recent years however, it became clear that switching to large amount of unreliable, commodity servers was the most economical solution.
+In recent years however, it became clear that switching to a large amount of unreliable, commodity servers was the most economical solution.
 Not only was the hardware for this approach cheaper, it also helped with availability.
 If a server component had to be replaced, it could simply be taken offline while the rest of the server handled requests.
 
@@ -26,7 +26,7 @@ We added a new method called ``replicated route'', in which all nodes are guaran
 
 Our implementation can run either on top of UDP sockets or using custom userland networking on top of DPDK.
 While the former makes local development easier, the latter allows for high throughput and low latency by minimizing context switch overhead.
-We were able to get up to 275'000 messages per second on our test cluster, with 99th percentile latency as low as \SI{30}{\micro\second}.
+We were able to get up to 275'000 messages per second on our test cluster of three machines, with 99th percentile latency as low as \SI{30}{\micro\second} (for an application processing time of \SI{1}{\micro\second}).
 
 We also observed the effect of application workload on the performance of the consensus algorithm.
 In particular, we show that executing workloads in the networking thread on the replicas can lead to important losses of throughput.
